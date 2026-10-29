@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\Audit\AuditService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 
 class DeactivateUserAction
 {
@@ -17,6 +18,19 @@ class DeactivateUserAction
     public function execute(User $user, User $deactivatedBy, ?string $reason = null): User
     {
         return DB::transaction(function () use ($user, $deactivatedBy, $reason) {
+            // Guard against deactivating the only active Central Admin
+            if ($user->isCentralAdmin()) {
+                $activeAdminCount = User::where('is_central_admin', true)
+                    ->where('status', UserStatus::Active)
+                    ->count();
+
+                if ($activeAdminCount <= 1) {
+                    throw ValidationException::withMessages([
+                        'status' => 'Cannot deactivate the only active Central Admin account.',
+                    ]);
+                }
+            }
+
             $before = [
                 'status' => $user->status->value,
             ];

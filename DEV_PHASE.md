@@ -1,22 +1,53 @@
 # Pabasa — Development Phase Tracker
 
 > **Project:** Multi-Church Reading-Intention System  
-> **Spec:** [`multi_church_reading_system_development_specification.md`](multi_church_reading_system_development_specification.md)  
+> **Canonical Blueprint:** [`multi_church_reading_system_development_specification.md`](multi_church_reading_system_development_specification.md)  
+> **Operational Guide:** Simplified Development Specification (v1.0)  
 > **Last updated:** 2026-10-29  
 
 ---
 
-## Implementation Phases
+## 1. Simplified Architecture & Core Principles
+
+Per the **Simplified Development Specification**, the implementation focuses on delivering one working feature at a time using Laravel's standard features before adding custom architecture.
+
+### The Stack
+- **Backend:** Laravel 13.x (PHP 8.5 in Docker, Composer dependencies pinned)
+- **Frontend:** Inertia.js 2.x + React 19 (Tailwind CSS 4.x, Ziggy routing)
+- **Database:** MySQL 8.4 (Dockerized, strict mode, `DECIMAL(12,2)` for all monetary values)
+- **Local Dev:** Docker Compose with project files on the Windows filesystem
+- **Deployment Target:** Laravel Cloud (private storage disk, Redis queue, automated MySQL backups)
+- **Authentication & Authorization:** Laravel Breeze (Inertia/React), Laravel Policies, explicit church-membership checks
+- **Files:** Private storage disk with randomized keys for GCash screenshots and protected reading-list PDFs
+- **Testing:** Automated Laravel Feature tests executed inside Docker against MySQL 8.4 (never SQLite-only)
+
+### Pragmatic Design Rules
+1. **No unnecessary complexity:** No separate public REST API or microservices when Inertia actions suffice. No redundant repository layers, custom event buses, or third-party permission frameworks.
+2. **Standard Laravel components:** Controllers for HTTP handling, Form Requests for validation, Policies for authorization, Eloquent models for relationships, and small single-responsibility Action/Service classes for multi-step domain workflows.
+3. **Database transactions & locks:** Wrap order booking, payment verification, and reading-list finalization in `DB::transaction()` with `lockForUpdate()`.
+4. **Post-commit dispatching:** Send emails, notifications, and queue jobs strictly **after** database transactions commit (`DB::afterCommit()`).
+5. **Strict state separation:** Maintain four independent state machines: **Order**, **Payment**, **Reading List**, and **Settlement**. Never combine them into a single status field.
+6. **No unapproved assumptions:** Pricing, service fees, revenue-share percentages, and payout formulas remain open business decisions. If configuration is missing, fail safely with `configuration_required`. Never invent or seed default financial rates.
+
+### Scope Boundaries
+
+| In Scope (First Usable Release) | Added After Core Workflow Works | Strictly Excluded (Unless Separately Approved) |
+|---|---|---|
+| • Public church directory & details<br>• Central Admin church registration & verification<br>• Church Admin profiles, categories, schedules & staff<br>• Registered & guest multi-intention orders<br>• GCash screenshot & reference submission<br>• Central Admin manual verification workbench<br>• Confirmed intentions to lector reading list<br>• Assigned lector live list management & completion<br>• Order tracking & change/support requests<br>• Central Admin settlements & payout recording<br>• Private file storage & audit trails<br>• Responsive UI with `en`, `fil`, `ceb` localization | • Installable PWA & offline ambo sync<br>• Advanced notification retries & telemetry<br>• In-depth support triage & privacy workflows<br>• Automated scheduled exports & PDF reports<br>• Advanced operational analytics dashboards | • Automated GCash API verification / webhook reconciliation<br>• Automatic refunds or automated bank payouts<br>• Native iOS / Android apps<br>• Public self-registration for churches<br>• Hard-coded / invented pricing, fees, or revenue-share |
+
+---
+
+## 2. Implementation Phases Overview
 
 ```mermaid
 flowchart TD
     P0["Phase 0: Stack Setup ✅"]
     P1["Phase 1: Foundation, Security & Auth UI ✅"]
-    P2["Phase 2: Directory & Mass Scheduling UI"]
-    P3["Phase 3: Orders, Payments & Guest Portal"]
-    P4["Phase 4: Live Lector Operations & PDF"]
-    P5["Phase 5: Finance, Support & Reports UI"]
-    P6["Phase 6: Validation, A11y & Pilot"]
+    P2["Phase 2: Directory & Mass Scheduling UI ✅"]
+    P3["Phase 3: Orders, Payments & Guest Portal ✅"]
+    P4["Phase 4: Live Lector Operations & PDF ⏳"]
+    P5["Phase 5: Finance, Support & Reports UI ⬜"]
+    P6["Phase 6: Validation, A11y & Pilot ⬜"]
 
     P0 --> P1 --> P2 --> P3 --> P4 --> P5 --> P6
 ```
@@ -25,29 +56,28 @@ flowchart TD
 
 ### Phase 0 — Stack Setup
 
-**Status:** ✅ Completed
+**Status:** ✅ Completed  
 
-> Pre-requisite before any feature work. Not in the spec but required because the project is a fresh Laravel skeleton.
+> Pre-requisite before any feature work. Scaffolding the clean Laravel 13 + Inertia 2.x + React 19 foundation on MySQL 8.4.
 
 **Deliverables:**
-
 - [x] Install Inertia.js (server adapter + client)
 - [x] Install React 19 + @inertiajs/react
 - [x] Install Laravel Breeze with Inertia/React variant (auth scaffolding)
 - [x] Switch default DB to MySQL 8.4 in `.env.example` and `config/database.php`
 - [x] Install Ziggy for named route access in React
 - [x] Configure 3 locales: `en`, `fil`, `ceb`
-- [x] Set up directory structure per spec §2
+- [x] Set up directory structure per spec §2 (`Actions/`, `Enums/`, `Policies/`, `Services/`)
 - [x] Verify Docker Compose boots cleanly with MySQL 8.4 + Redis 7
 
-**Acceptance:** Project runs with Inertia/React, auth works, MySQL is default.
+**Acceptance:** Project runs with Inertia/React, auth works, MySQL 8.4 is the default test and runtime database.
 
 ---
 
 ### Phase 1 — Foundation, Security & App Shell UI
 
 **Status:** ✅ Completed  
-**Spec section:** §11 Phase 1  
+**Spec section:** Simplified Spec §9 Phase 1 (Blueprint §11 Phase 1)  
 
 #### 1. Backend Track
 - [x] Migrations: `users`, `churches`, `church_memberships`, `invitations`, `system_settings`, `audit_logs`
@@ -71,8 +101,7 @@ flowchart TD
 - [x] Wire membership management actions (invite, deactivate, change role) to backend policies and audit logger
 - [x] Implement loading skeletons, empty states, and permission-denied (403/404) views
 
-**Test cases (16):**
-
+**Test cases (16/16 passing):**
 - [x] 1. Unauthenticated visitor cannot access staff dashboards
 - [x] 2. Registered user can register/login/logout; logout invalidates session
 - [x] 3. Unverified user cannot access secure order tracking
@@ -97,17 +126,17 @@ flowchart TD
 ### Phase 2 — Church Directory & Mass Scheduling UI
 
 **Status:** ✅ Completed  
-**Spec section:** §11 Phase 2  
+**Spec section:** Simplified Spec §9 Phase 2 (Blueprint §11 Phase 2)  
 
 #### 1. Backend Track
 - [x] Migrations: `church_branding`, `church_categories`, `mass_series`, `mass_schedules`, `mass_assignments`
-- [x] Backed PHP enums: `BookingStatus`, `MassStatus`
-- [x] Policy: `MassSchedulePolicy`
+- [x] Backed PHP enums: `BookingStatus`, `MassStatus`, `MassAssignmentStatus`
+- [x] Policies: `MassSchedulePolicy`, `ChurchPolicy` extensions
 - [x] Church verification / publication / suspension workflow
 - [x] Categories management (church-defined, deactivate not delete)
 - [x] Mass schedules: recurring series/occurrences, booking windows, cutoffs
-- [x] Lector assignments
-- [x] Conflict detection (shared resources/staff, not blanket overlap rejection)
+- [x] Lector assignments with active/removed tracking
+- [x] Conflict detection (shared resources/staff, allowing unrelated chapel overlaps)
 
 #### 2. UI/UX Track (Inertia + React 19)
 - [x] **Public Church Directory:** Search bar, diocese/city filters, parish cards with cover photo/logo, published status badges, and church profile page
@@ -121,8 +150,7 @@ flowchart TD
 - [x] Wire schedule builder form to backend recurring series actions with frontend date-range validation
 - [x] Ensure non-published churches return 404 on public routes and render graceful not-found states
 
-**Test cases (18):**
-
+**Test cases (18/18 passing):**
 - [x] 1. Draft/unverified/suspended/deactivated churches do not accept public submissions
 - [x] 2. Only published churches appear in the public directory
 - [x] 3. Central Admin can verify and publish a church; action is audited
@@ -148,70 +176,71 @@ flowchart TD
 
 ### Phase 3 — Orders, Payments, Guest Tracking & Review Queue
 
-**Status:** ⬜ Not started  
-**Spec section:** §11 Phase 3  
+**Status:** ✅ Completed  
+**Spec section:** Simplified Spec §9 Phase 3 (Blueprint §11 Phase 3)  
 
 #### 1. Backend Track
-- [ ] Migrations: `pricing_configurations`, `orders`, `intentions`, `payments`, `payment_evidence`, `payment_exceptions`, `refunds`, `correction_requests`, `cancellation_requests`, `rescheduling_requests`, `guest_order_access`, `order_account_links`
-- [ ] Backed PHP enums: `OrderStatus`, `IntentionStatus`, `PaymentStatus`, `RefundStatus`, `CancellationRequestStatus`, `ReschedulingRequestStatus`, `CorrectionRequestStatus`
-- [ ] Policies: `OrderPolicy`, `PaymentPolicy`, `RefundPolicy`
-- [ ] Domain action: `CreateOrder` (spec §8.1)
-- [ ] Domain action: `SubmitPaymentEvidence` (spec §8.2)
-- [ ] Domain action: `VerifyPayment` — Central Admin only (spec §8.3)
-- [ ] Pricing configuration guardrails and order snapshots
-- [ ] Protected evidence uploads (private disk, randomized keys, authorized streaming)
-- [ ] Guest access: secure tracking, email verification, recovery, credential revocation
+- [x] Migrations: `pricing_configurations`, `orders`, `intentions`, `payments`, `payment_evidence`, `payment_exceptions`, `refunds`, `reading_lists`, `reading_list_entries`, `correction_requests`, `cancellation_requests`, `rescheduling_requests`, `guest_order_access`, `order_account_links`
+- [x] Backed PHP enums: `OrderStatus`, `IntentionStatus`, `PaymentStatus`, `RefundStatus`, `CancellationRequestStatus`, `ReschedulingRequestStatus`, `CorrectionRequestStatus`
+- [x] Policies: `OrderPolicy`, `PaymentPolicy`, `RefundPolicy`
+- [x] Domain action: `CreateOrderAction` (spec §8.1)
+- [x] Domain action: `SubmitPaymentEvidenceAction` (spec §8.2)
+- [x] Domain action: `VerifyPaymentAction` — Central Admin only (spec §8.3)
+- [x] Domain action: `RejectPaymentAction` — Central Admin only with reason and user notification
+- [x] Domain actions for customer requests: `CreateCancellationRequestAction`, `CreateCorrectionRequestAction`, `CreateReschedulingRequestAction`
+- [x] Pricing configuration guardrails and order snapshots (`PricingResolutionService`)
+- [x] Protected evidence uploads (private disk, randomized keys, authorized controller streaming)
+- [x] Guest access: secure tracking, email verification challenge, credential revocation (`GuestAccessService`)
 
 #### 2. UI/UX Track (Inertia + React 19)
-- [ ] **Parishioner Intention Booking Wizard:**
+- [x] **Parishioner Intention Booking Wizard:**
   - Step 1: Mass selection with date and cutoff indicators
   - Step 2: Multi-intention builder (category selection, intention wording, donor name, duplicate warning banner)
   - Step 3: Transparent pricing breakdown and order summary
   - Step 4: GCash payment screen (church GCash QR code, account number, drag-and-drop screenshot uploader with client image preview and file validation)
-- [ ] **Guest Order Tracking Portal:** Mobile-first order tracking page displaying live order timeline (`awaiting_payment` → `payment_under_review` → `confirmed` → `completed`), email challenge entry modal, and receipt download
-- [ ] **Central Admin Payment Review Queue:** Split-screen review workbench:
+- [x] **Guest Order Tracking Portal:** Mobile-first order tracking page displaying live order timeline (`awaiting_payment` → `payment_under_review` → `confirmed` → `completed`), email challenge entry modal, and receipt download
+- [x] **Central Admin Payment Review Queue:** Split-screen review workbench:
   - Left panel: Order details, claimed amount, reference number, duplicate reference warning flags, exception history
   - Right panel: High-resolution zoomable GCash screenshot viewer
   - Action bar: Explicit human verification buttons: "Verify Payment", "Flag Review Exception" (underpaid/overpaid/unclear), "Reject with Reason"
-- [ ] **Correction & Cancellation Modals:** Parishioner-facing request dialogs to submit spelling fixes or cancellation requests before cutoff
+- [x] **Correction & Cancellation Modals:** Parishioner-facing request dialogs to submit spelling fixes or cancellation requests before cutoff
 
 #### 3. Wiring & Integration
-- [ ] Wire multi-step booking wizard to `CreateOrder` and `SubmitPaymentEvidence` with form state persistence and validation feedback
-- [ ] Wire Central Admin verification workbench to `VerifyPayment` with row locking and instant UI feedback
-- [ ] Connect guest access token validation and email challenges with rate limiting indicators
+- [x] Wire multi-step booking wizard to `CreateOrderAction` and `SubmitPaymentEvidenceAction` with form state persistence and validation feedback
+- [x] Wire Central Admin verification workbench to `VerifyPaymentAction` with row locking and instant UI feedback
+- [x] Connect guest access token validation and email challenges with rate limiting indicators
 
-**Test cases (30):**
-
-- [ ] 1. Registered user creates an order with multiple intentions for one Mass
-- [ ] 2. Guest can submit without an account and receives a secure tracking flow
-- [ ] 3. An order containing intentions for different churches or Masses is rejected
-- [ ] 4. Inactive category is rejected for new submissions; historical label snapshot unchanged
-- [ ] 5. Names and wording preserve exact submitted Unicode text
-- [ ] 6. Duplicate-warning logic flags likely duplicates but does not block a legitimate repeat
-- [ ] 7. No approved pricing config → `configuration_required`; no price invented
-- [ ] 8. Order and all intention rows roll back if any child creation fails
-- [ ] 9. Mass closing between page load and submit → server-side rejection
-- [ ] 10. Payment evidence accepts only allowed, validated file types; rejects oversized/malicious
-- [ ] 11. Evidence storage is private; cannot be fetched without authorization
-- [ ] 12. Evidence submission moves payment to pending_verification but NEVER verified
-- [ ] 13. Church Admin cannot verify/reject payment by direct POST
-- [ ] 14. Lector cannot access payment evidence
-- [ ] 15. Central Admin can verify only after explicit action with verified amount/reference
-- [ ] 16. Duplicate reference creates a review flag; same transaction cannot be counted twice
-- [ ] 17. Underpayment, overpayment, unclear evidence, unmatched ref, late payment → review/resolution flow
-- [ ] 18. Rejection requires a reason and produces user-facing notice
-- [ ] 19. Retried verification request does not duplicate reading-list entries
-- [ ] 20. Guest tracking rejects order number alone
-- [ ] 21. Guest tracking requires valid credential + verification + unexpired access
-- [ ] 22. Recovery response does not disclose whether an email exists
-- [ ] 23. Replacing a guest credential invalidates the old credential
-- [ ] 24. Matching email alone cannot link a guest order to a registered account
-- [ ] 25. Owner can edit eligible intentions before payment verification; blocked after
-- [ ] 26. Cancellation request does not automatically cancel/refund the order
-- [ ] 27. Rescheduling request does not automatically move an order
-- [ ] 28. Every sensitive payment/order decision creates an audit record
-- [ ] 29. Concurrent Central Admin verification → one consistent decision
-- [ ] 30. Payment after cutoff held for review rather than silently discarded
+**Test cases (30/30 passing):**
+- [x] 1. Registered user creates an order with multiple intentions for one Mass
+- [x] 2. Guest can submit without an account and receives a secure tracking flow
+- [x] 3. An order containing intentions for different churches or Masses is rejected
+- [x] 4. Inactive category is rejected for new submissions; historical label snapshot unchanged
+- [x] 5. Names and wording preserve exact submitted Unicode text
+- [x] 6. Duplicate-warning logic flags likely duplicates but does not block a legitimate repeat
+- [x] 7. No approved pricing config → `configuration_required`; no price invented
+- [x] 8. Order and all intention rows roll back if any child creation fails
+- [x] 9. Mass closing between page load and submit → server-side rejection
+- [x] 10. Payment evidence accepts only allowed, validated file types; rejects oversized/malicious
+- [x] 11. Evidence storage is private; cannot be fetched without authorization
+- [x] 12. Evidence submission moves payment to pending_verification but NEVER verified
+- [x] 13. Church Admin cannot verify/reject payment by direct POST
+- [x] 14. Lector cannot access payment evidence
+- [x] 15. Central Admin can verify only after explicit action with verified amount/reference
+- [x] 16. Duplicate reference creates a review flag; same transaction cannot be counted twice
+- [x] 17. Underpayment, overpayment, unclear evidence, unmatched ref, late payment → review/resolution flow
+- [x] 18. Rejection requires a reason and produces user-facing notice
+- [x] 19. Retried verification request does not duplicate reading-list entries
+- [x] 20. Guest tracking rejects order number alone
+- [x] 21. Guest tracking requires valid credential + verification + unexpired access
+- [x] 22. Recovery response does not disclose whether an email exists
+- [x] 23. Replacing a guest credential invalidates the old credential
+- [x] 24. Matching email alone cannot link a guest order to a registered account
+- [x] 25. Owner can edit eligible intentions before payment verification; blocked after
+- [x] 26. Cancellation request does not automatically cancel/refund the order
+- [x] 27. Rescheduling request does not automatically move an order
+- [x] 28. Every sensitive payment/order decision creates an audit record
+- [x] 29. Concurrent Central Admin verification → one consistent decision
+- [x] 30. Payment after cutoff held for review rather than silently discarded
 
 **Release gate:** All payment exception tests pass; payment evidence remains strictly private; verification queue and parishioner booking wizard tested across mobile and desktop.
 
@@ -219,37 +248,49 @@ flowchart TD
 
 ### Phase 4 — Reading Operations & Live Lector UI
 
-**Status:** ⬜ Not started  
-**Spec section:** §11 Phase 4  
+**Status:** ⏳ In Progress (Next Focus)  
+**Spec section:** Simplified Spec §9 Phase 4 (Blueprint §11 Phase 4)  
+
+> **Core Objective:** Complete the primary customer journey: verified intentions appear automatically on the assigned lector's reading list; assigned lectors arrange, finalize, read, and mark completions during Mass.
 
 #### 1. Backend Track
-- [ ] Migrations: `reading_lists`, `reading_list_entries`, `reading_list_versions`
-- [ ] Backed PHP enums: `ReadingListStatus`, `ReadingEntryStatus`
-- [ ] Policy: `ReadingListPolicy`
-- [ ] Domain action: `ReorderReadingList` (spec §8.4)
-- [ ] Domain action: `ApplyCorrection` (spec §8.5)
-- [ ] Immutable snapshotting on finalization; reopening and refinalization workflows
-- [ ] Protected PDF reading list generator
-- [ ] Read-only offline caching & stale-data indicator
+- [ ] Verify existing migrations: `reading_lists` and `reading_list_entries` (created in Phase 3)
+- [ ] Migration: `reading_list_versions` (immutable snapshots for finalized lists)
+- [ ] Backed PHP enums: `ReadingListStatus` (`draft`, `finalized`, `completed`), `ReadingEntryStatus` (`pending`, `completed`, `skipped`, `flagged`)
+- [ ] Policy: `ReadingListPolicy` (lector must have active assignment to specific Mass; Church Admin can view own-church lists)
+- [ ] Domain action: `ReorderReadingListAction` (spec §8.4) with sequence validation
+- [ ] Domain action: `FinalizeReadingListAction` with version snapshot and audit trail
+- [ ] Domain action: `ReopenReadingListAction` requiring explicit authorization and recorded reason
+- [ ] Domain action: `ApplyCorrectionAction` (spec §8.5) integrating approved corrections
+- [ ] Domain action: `MarkReadingEntryCompletedAction` with timestamp and actor
+- [ ] Protected PDF reading list generator (clean ecclesiastical format, authorized download stream)
 
 #### 2. UI/UX Track (Inertia + React 19)
-- [ ] **Live Lector Dashboard (Tablet & Mobile Optimized):**
+- [ ] **Assigned Masses Portal for Lectors:**
+  - View assigned upcoming and active Masses with cutoff and finalization status
+  - Restrict access strictly to assigned Masses (404/denial for unassigned)
+- [ ] **Live Lector Ambo Workbench (Tablet & Mobile Optimized):**
   - High-contrast, glare-resistant ambo reading mode (dark/light toggle with elevated contrast)
-  - Resizable large typography slider for effortless reading while speaking
-  - Drag-and-drop / handle reordering during preparation phase
-  - Intention pronunciation assistance: phonetic guide chips and emphasis notes
+  - Resizable large typography slider for effortless reading while speaking at the ambo
+  - Drag-and-drop / handle reordering during draft/preparation phase
+  - Intention pronunciation chips & phonetic assistance
   - Single-tap completion checkmark with progressive visual strike-through
-- [ ] **Reading List Finalization Workflow UI:** Warning modal explaining list freeze, version indicator, "Reopen List with Justification" modal, and change-log history drawer
-- [ ] **PDF / Print Layout:** Formatted, print-ready intention sheet matching ecclesiastical standards with church header, Mass details, category sections, and date stamps
-- [ ] **Offline Stale Warning Banner:** Prominent indicator when network connection is severed, showing last sync time and disabling unsafe live mutations
+- [ ] **Reading List Finalization Workflow UI:**
+  - Pre-finalization review summary
+  - Freeze warning modal explaining immutable version creation
+  - "Reopen List with Justification" modal with mandatory audit reason
+- [ ] **Ecclesiastical Print / PDF Layout:**
+  - Print-ready intention sheet with church header, Mass date/time, celebrant line, category headings, and timestamped watermark
 
-#### 3. Wiring & Integration
-- [ ] Wire live intention completion to backend actions with optimistic UI updates and auto-retry on reconnection
-- [ ] Wire reorder actions to `ReorderReadingList` with debounce and rollback on failure
-- [ ] Secure PDF download stream verifying lector assignment server-side
+#### 3. Post-Core Enhancements (Deferred per Simplified Spec §2)
+- [ ] Service worker offline caching & stale-data indicator banner (add after core workflow works)
 
-**Test cases (22):**
+#### 4. Wiring & Integration
+- [ ] Auto-populate `reading_list_entries` upon Central Admin `VerifyPaymentAction` commit
+- [ ] Wire live intention completion to backend actions with optimistic UI updates
+- [ ] Secure PDF stream ensuring unassigned lectors and public users receive 403/404
 
+**Test cases (22 planned):**
 - [ ] 1. Reading list contains only eligible confirmed intentions
 - [ ] 2. Unverified order never occupies a confirmed reading-list slot
 - [ ] 3. Lector sees only assigned Masses and only authorized fields
@@ -273,24 +314,23 @@ flowchart TD
 - [ ] 21. Scheduled finalization retry does not create duplicate versions or corrupt state
 - [ ] 22. Issue reports expose user-safe status but not internal staff notes
 
-**Release gate:** List finalization, reopening, live completion, and offline warning pass rigorous device and network tests.
+**Release gate:** List finalization, reopening, live ambo completion, and authorized PDF generation pass device and authorization tests.
 
 ---
 
 ### Phase 5 — Finance, Support, Reporting & Admin Portals
 
 **Status:** ⬜ Not started  
-**Spec section:** §11 Phase 5  
+**Spec section:** Simplified Spec §9 Phase 5 (Blueprint §11 Phase 5)  
 
 #### 1. Backend Track
 - [ ] Migrations: `settlements`, `settlement_lines`, `payouts`, `support_tickets`, `support_ticket_events`, `notification_deliveries`, `privacy_requests`, `security_incidents`
-- [ ] Backed PHP enums: `SettlementStatus`, `PayoutStatus`, `SupportTicketStatus`, `SupportTicketPriority`, `SupportTicketCategory`
+- [ ] Backed PHP enums: `SettlementStatus` (`draft`, `reviewed`, `approved`, `paid`), `PayoutStatus`, `SupportTicketStatus`, `SupportTicketPriority`, `SupportTicketCategory`
 - [ ] Policies: `SettlementPolicy`, `PayoutPolicy`, `SupportTicketPolicy`, `PrivacyRequestPolicy`, `SecurityIncidentPolicy`
 - [ ] Settlement calculator service (spec §6.2): `PricingService` / `SettlementCalculator`
-- [ ] Domain actions: `RecordRefundTransfer`, `RecordPayoutTransfer` (spec §8.6)
-- [ ] PDF/CSV/XLSX export generators with formula injection sanitization
-- [ ] Support ticket routing and event logs
-- [ ] Privacy request erasure & export pipelines
+- [ ] Domain actions: `RecordRefundTransferAction`, `RecordPayoutTransferAction` (spec §8.6)
+- [ ] CSV/Excel report generation with formula injection sanitization (`=` prefix neutralization)
+- [ ] Support ticket routing and event logs (Payment/Refund to Central Admin, Church-specific to Church Admin)
 
 #### 2. UI/UX Track (Inertia + React 19)
 - [ ] **Central Admin Settlement Console:** Settlement calculation breakdown, line-item verification audits, church payout approval modal with manual bank transfer reference recorder
@@ -303,12 +343,11 @@ flowchart TD
 - [ ] **Privacy Request Management Portal:** User data request intake screen, identity verification challenge, and data export download page
 
 #### 3. Wiring & Integration
-- [ ] Wire settlement calculations with validation guardrails preventing approval of unconfigured business rules
+- [ ] Wire settlement calculations with validation guardrails preventing approval of unconfigured business rules (`configuration_required`)
 - [ ] Wire support tickets with role-based routing and ensure internal notes are never sent in customer-facing props
 - [ ] Integrate secure file downloads with expiring signed URLs
 
-**Test cases (28):**
-
+**Test cases (28 planned):**
 - [ ] 1. Settlement includes only verified payments
 - [ ] 2. Pending, rejected, and review-required payments excluded
 - [ ] 3. A payment cannot be included twice in active settlements
@@ -345,7 +384,7 @@ flowchart TD
 ### Phase 6 — System Validation, A11y & Pilot Launch
 
 **Status:** ⬜ Not started  
-**Spec section:** §11 Phase 6  
+**Spec section:** Simplified Spec §9 Phase 6 & §11 Launch Checklist  
 
 #### 1. Technical & Security Validation Track
 - [ ] Full automated test suite passing on production-compatible MySQL 8.4
@@ -369,8 +408,7 @@ flowchart TD
 - [ ] Centralized GCash reconciliation runbook validation with operations staff
 - [ ] Final sign-off on legal privacy notices and revenue-sharing parameters
 
-**Test cases (18):**
-
+**Test cases (18 planned):**
 - [ ] 1. Run full automated suite against production-compatible MySQL version
 - [ ] 2. Cross-church IDOR tests: orders, intentions, schedules, assignments, evidence, PDFs, support, reports, settlements, exports
 - [ ] 3. Simultaneous order submissions at cutoff
@@ -394,34 +432,67 @@ flowchart TD
 
 ---
 
-## Risks & Edge Cases
+## 3. Minimum Automated Test Matrix (Simplified Spec §10)
 
-| # | Risk | Severity | Mitigation | Status |
-|---|---|---|---|---|
-| 1 | **Church isolation bypass** — cross-tenant data leak via URL ID manipulation | 🔴 Critical | Composite FK where possible; all queries scoped from membership, not request input; IDOR test suite for every resource | ⬜ |
-| 2 | **Double-counted payment** — same GCash transaction included in multiple settlements | 🔴 Critical | Unique constraints on `settlement_lines(settlement_id, payment_id)`; `lockForUpdate()` during verification; transactional checks | ⬜ |
-| 3 | **Invented pricing** — system fabricates prices/fees/percentages | 🔴 Critical | No seeded values; `configuration_required` status blocks settlement calculation; documented in AGENTS.md | ⬜ |
-| 4 | **Float money arithmetic** — rounding errors in financial calculations | 🔴 Critical | `DECIMAL(12,2)` in all migrations; `bcmath` for PHP math; linting/review enforcement | ⬜ |
-| 5 | **Concurrent cutoff bypass** — two requests racing past Mass cutoff time | 🟠 High | Recheck cutoff inside transaction with row lock on `mass_schedules` | ⬜ |
-| 6 | **Guest token leak** — raw tokens logged or exposed in URLs | 🟠 High | Hash-only storage; never log raw tokens; rate-limit recovery routes; minimize URL params | ⬜ |
-| 7 | **Payment evidence exposure** — screenshots publicly accessible | 🟠 High | Private disk storage; randomized keys; authorized controller streaming only; never expose `storage_key` | ⬜ |
-| 8 | **Finalized list corruption** — silent edits to finalized reading list | 🟠 High | Immutable version snapshots; reopen requires audit trail + reason; re-finalization creates new version | ⬜ |
-| 9 | **SQLite in tests** — tests pass on SQLite but fail on MySQL production | 🟡 Medium | Spec explicitly forbids SQLite-only testing; enforce MySQL in CI/CD and local testing | ⬜ |
-| 10 | **No Inertia/React installed** — stack gap blocks UI work | 🟡 Medium | Phase 0 prerequisite; must complete before any feature phase | ✅ |
-| 11 | **Concurrent verification race** — two admins verifying same payment simultaneously | 🟠 High | `lockForUpdate()` + state recheck inside transaction; second request fails gracefully | ⬜ |
-| 12 | **Auto-complete anti-pattern** — timers or scheduled jobs completing refunds/payouts | 🔴 Critical | Spec explicitly forbids auto-completion; all completions require human confirmation + transfer evidence | ⬜ |
+| Category | Requirement | Verified By | Status |
+|---|---|---|---|
+| **1. Church isolation** | Church Admin cannot read or modify another church's records | `Phase1SecurityAndFoundationTest::case_7`<br>`Phase2ChurchDirectoryAndSchedulingTest::case_4` | ✅ Pass |
+| **2. Lector assignment** | Lector cannot open or change an unassigned Mass | `Phase2ChurchDirectoryAndSchedulingTest::case_13`<br>`Phase3OrdersAndPaymentsTest::case_14` | ✅ Pass |
+| **3. Order ownership** | User or guest cannot access another party's order | `Phase3OrdersAndPaymentsTest::case_20, case_21, case_24` | ✅ Pass |
+| **4. Booking cutoff** | Closed or expired Mass cannot accept an order | `Phase2ChurchDirectoryAndSchedulingTest::case_9, case_18`<br>`Phase3OrdersAndPaymentsTest::case_9` | ✅ Pass |
+| **5. Order consistency** | All intentions in one order belong to the same church and Mass | `Phase3OrdersAndPaymentsTest::case_3` | ✅ Pass |
+| **6. Payment authorization** | Only Central Admin can verify or reject GCash payments | `Phase3OrdersAndPaymentsTest::case_13, case_15` | ✅ Pass |
+| **7. Duplicate payment** | Same GCash reference cannot be counted twice without review | `Phase3OrdersAndPaymentsTest::case_16` | ✅ Pass |
+| **8. Repeated action** | Retrying verification/finalization does not create duplicates | `Phase3OrdersAndPaymentsTest::case_19` | ✅ Pass |
+| **9. Private evidence** | Screenshot storage is private and validated on upload | `Phase3OrdersAndPaymentsTest::case_10, case_11` | ✅ Pass |
+| **10. Reading-list integrity** | Only confirmed intentions included; finalization auditable | Phase 4 test suite (Cases 1, 2, 7, 8) | ⏳ Next |
+| **11. Financial truth** | Approval is not the same as completed refund or payout | `Phase3OrdersAndPaymentsTest::case_26`<br>Phase 5 test suite (Cases 11-15) | ⏳ In Progress |
+| **12. Export authorization** | Users can only download reports they are authorized to view | Phase 5 test suite (Cases 23-25) | ⬜ Pending |
 
 ---
 
-## Progress Summary
+## 4. Risks & Edge Cases
+
+| # | Risk | Severity | Mitigation | Status |
+|---|---|---|---|---|
+| 1 | **Church isolation bypass** — cross-tenant data leak via URL ID manipulation | 🔴 Critical | Composite FK where possible; all queries scoped from membership, not request input; IDOR test suite for every resource | ✅ Verified (Phases 1-3) |
+| 2 | **Double-counted payment** — same GCash transaction included in multiple settlements | 🔴 Critical | Unique constraints on `settlement_lines(settlement_id, payment_id)`; `lockForUpdate()` during verification; transactional checks | ⏳ Phase 5 Gate |
+| 3 | **Invented pricing** — system fabricates prices/fees/percentages | 🔴 Critical | No seeded values; `configuration_required` status blocks order/settlement calculation; documented in AGENTS.md | ✅ Verified (`PricingResolutionService`) |
+| 4 | **Float money arithmetic** — rounding errors in financial calculations | 🔴 Critical | `DECIMAL(12,2)` in all migrations; `bcmath` in PHP; strict decimal validation | ✅ Verified in Phase 3 |
+| 5 | **Concurrent cutoff bypass** — two requests racing past Mass cutoff time | 🟠 High | Recheck cutoff inside transaction with row lock on `mass_schedules` | ✅ Verified (`CreateOrderAction`) |
+| 6 | **Guest token leak** — raw tokens logged or exposed in URLs | 🟠 High | Hash-only storage (`hash('sha256', token)`); never log raw tokens; rate-limit recovery routes | ✅ Verified (`GuestAccessService`) |
+| 7 | **Payment evidence exposure** — screenshots publicly accessible | 🟠 High | Private disk storage; randomized keys; authorized controller streaming only; never expose `storage_key` | ✅ Verified (`PaymentReviewController`) |
+| 8 | **Finalized list corruption** — silent edits to finalized reading list | 🟠 High | Immutable version snapshots; reopen requires audit trail + reason; re-finalization creates new version | ⏳ Phase 4 Gate |
+| 9 | **SQLite in tests** — tests pass on SQLite but fail on MySQL production | 🟡 Medium | Spec explicitly forbids SQLite-only testing; enforce MySQL 8.4 in Docker and CI | ✅ Enforced (MySQL 8.4) |
+| 10 | **No Inertia/React installed** — stack gap blocks UI work | 🟡 Medium | Phase 0 prerequisite completed with React 19 + Inertia 2.x | ✅ Completed |
+| 11 | **Concurrent verification race** — two admins verifying same payment simultaneously | 🟠 High | `lockForUpdate()` + state recheck inside transaction; second request fails gracefully | ✅ Verified (`VerifyPaymentAction`) |
+| 12 | **Auto-complete anti-pattern** — timers or scheduled jobs completing refunds/payouts | 🔴 Critical | Spec explicitly forbids auto-completion; all completions require human confirmation + transfer evidence | ⏳ Phase 5 Gate |
+
+---
+
+## 5. Progress Summary
 
 | Phase | Focus | Backend | UI/UX | Tests | Status |
 |---|---|---|---|---|---|
-| Phase 0 | Stack Setup | 8 items | Integrated | — | ✅ Completed |
-| Phase 1 | Foundation & Security | 8 items | 5 UI items | 16 cases | ✅ Completed |
-| Phase 2 | Directory & Mass Scheduling | 8 items | 5 UI items | 18 cases | ⬜ Not started |
-| Phase 3 | Orders, Payments & Guest Portal | 9 items | 4 UI items | 30 cases | ⬜ Not started |
-| Phase 4 | Reading Operations & Live Lector UI | 7 items | 4 UI items | 22 cases | ⬜ Not started |
-| Phase 5 | Finance, Support & Reports | 8 items | 5 UI items | 28 cases | ⬜ Not started |
-| Phase 6 | System Validation & Pilot | 6 items | 4 UI items | 18 cases | ⬜ Not started |
-| **Total** | **Full-Stack Platform** | **54 items** | **27 UI items** | **132 cases** | — |
+| **Phase 0** | Stack Setup | 8 items | Integrated | — | ✅ Completed |
+| **Phase 1** | Foundation, Security & App Shell | 8 items | 5 UI items | 16 cases | ✅ Completed (16/16 pass) |
+| **Phase 2** | Directory & Mass Scheduling | 8 items | 5 UI items | 18 cases | ✅ Completed (18/18 pass) |
+| **Phase 3** | Orders, Payments & Guest Portal | 9 items | 4 UI items | 30 cases | ✅ Completed (30/30 pass) |
+| **Phase 4** | Reading Operations & Live Lector UI | 10 items | 4 UI items | 22 cases | ⏳ In Progress (Next Focus) |
+| **Phase 5** | Finance, Support & Reports | 7 items | 5 UI items | 28 cases | ⬜ Not started |
+| **Phase 6** | System Validation, A11y & Pilot | 6 items | 4 UI items | 18 cases | ⬜ Not started |
+| **Total** | **Full-Stack Platform** | **56 items** | **27 UI items** | **132 cases** | **64/132 Tests Passing** |
+
+---
+
+## 6. Definition of Done Checklist (Simplified Spec §14)
+
+Before marking any feature or phase complete:
+- [ ] **End-to-End Functionality:** The requested workflow works seamlessly from browser through database and background queue.
+- [ ] **Server-Side Authorization:** Enforced via Laravel Policies and explicit membership resolution; never reliant on hidden UI buttons or client `church_id`.
+- [ ] **Tenant Isolation & Ownership:** Church Admin cannot access other churches; lectors cannot access unassigned Masses; users/guests cannot access foreign orders.
+- [ ] **Automated Tests on MySQL:** Feature tests cover normal path, boundary conditions, and unauthorized attempts on MySQL 8.4 (not SQLite).
+- [ ] **Audit Trail:** Sensitive financial, schedule, finalization, role, and exception changes write immutable audit log records.
+- [ ] **Financial Integrity:** No money status is falsely represented; completions require real transfer reference numbers and staff sign-off; no unapproved financial rules are hard-coded.
+- [ ] **Resilient UI States:** React pages provide clear loading skeletons, empty states, human-friendly validation feedback, and permission-denied screens.
+- [ ] **Data Preservation:** User-entered intention text and donor names preserve verbatim Unicode characters without automated mutation.

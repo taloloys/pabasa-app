@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'status', 'preferred_locale', 'is_central_admin', 'last_login_at'])]
+#[Fillable(['name', 'email', 'password', 'status', 'preferred_locale', 'is_central_admin', 'last_login_at', 'email_verified_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -60,6 +60,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(MassAssignment::class);
     }
 
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
     public function isCentralAdmin(): bool
     {
         return (bool) $this->is_central_admin;
@@ -90,5 +95,17 @@ class User extends Authenticatable implements MustVerifyEmail
             ->where('role', $roleValue)
             ->where('status', MembershipStatus::Active->value)
             ->exists();
+    }
+
+    public function scopeSearch($query, ?string $search)
+    {
+        if (! $search) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%");
+        });
     }
 }

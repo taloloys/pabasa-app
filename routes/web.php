@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ChurchRegistrationController;
 use App\Http\Controllers\Admin\ChurchVerificationController;
 use App\Http\Controllers\Admin\PaymentReviewController;
 use App\Http\Controllers\Admin\StaffDashboardController;
+use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Church\ChurchBrandingController;
 use App\Http\Controllers\Church\ChurchCategoryController;
 use App\Http\Controllers\Church\ChurchDashboardController;
@@ -102,6 +103,14 @@ Route::middleware(['auth', 'ensure.staff:central_admin'])->prefix('admin')->name
     Route::get('/payments/{payment}/evidence/{evidence}', [PaymentReviewController::class, 'streamEvidence'])->name('payments.evidence');
     Route::post('/payments/{payment}/verify', [PaymentReviewController::class, 'verify'])->name('payments.verify');
     Route::post('/payments/{payment}/reject', [PaymentReviewController::class, 'reject'])->name('payments.reject');
+
+    // User & Staff Oversight
+    Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
+    Route::post('/users', [UserManagementController::class, 'store'])->name('users.store');
+    Route::patch('/users/{user}', [UserManagementController::class, 'update'])->name('users.update');
+    Route::post('/users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
+    Route::post('/users/{user}/roles', [UserManagementController::class, 'assignRole'])->name('users.roles.assign');
+    Route::delete('/users/{user}/roles/{membership}', [UserManagementController::class, 'revokeRole'])->name('users.roles.revoke');
 });
 
 // Church Staff Routes

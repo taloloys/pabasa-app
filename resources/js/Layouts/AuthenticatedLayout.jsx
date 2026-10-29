@@ -70,12 +70,26 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </NavLink>
 
                                 {isCentralAdmin && (
-                                    <NavLink
-                                        href={route('admin.dashboard')}
-                                        active={route().current('admin.*')}
-                                    >
-                                        Diocese Console
-                                    </NavLink>
+                                    <>
+                                        <NavLink
+                                            href={route('admin.dashboard')}
+                                            active={route().current('admin.dashboard')}
+                                        >
+                                            Diocese Console
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('admin.payments.index')}
+                                            active={route().current('admin.payments.*')}
+                                        >
+                                            Review Payments
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('admin.users.index')}
+                                            active={route().current('admin.users.*')}
+                                        >
+                                            Staff & Users
+                                        </NavLink>
+                                    </>
                                 )}
 
                                 {/* Church Selector / Links */}
@@ -223,12 +237,26 @@ export default function AuthenticatedLayout({ header, children }) {
                         </ResponsiveNavLink>
 
                         {isCentralAdmin && (
-                            <ResponsiveNavLink
-                                href={route('admin.dashboard')}
-                                active={route().current('admin.*')}
-                            >
-                                Diocese Console
-                            </ResponsiveNavLink>
+                            <>
+                                <ResponsiveNavLink
+                                    href={route('admin.dashboard')}
+                                    active={route().current('admin.dashboard')}
+                                >
+                                    Diocese Console
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('admin.payments.index')}
+                                    active={route().current('admin.payments.*')}
+                                >
+                                    Review Payments
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('admin.users.index')}
+                                    active={route().current('admin.users.*')}
+                                >
+                                    Staff & Users
+                                </ResponsiveNavLink>
+                            </>
                         )}
 
                         {memberships.map((membership) => (
