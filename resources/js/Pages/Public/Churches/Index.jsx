@@ -224,9 +224,9 @@ export default function Index({ churches, filters, availableCities, availablePro
 
                                         <Link
                                             href={route('churches.show', { slug: church.slug })}
-                                            className="inline-flex items-center px-3.5 py-1.5 rounded-sm bg-liturgical-900 text-gold-200 hover:bg-liturgical-800 text-xs font-semibold tracking-wider uppercase transition shadow-2xs group-hover:bg-gold-700"
+                                            className="inline-flex items-center px-4 py-2 rounded-xl bg-gradient-to-r from-liturgical-800 to-liturgical-950 text-gold-100 hover:from-liturgical-700 hover:to-liturgical-900 text-xs font-bold tracking-wider uppercase transition shadow-2xs group-hover:from-liturgical-700 group-hover:to-liturgical-900"
                                         >
-                                            Schedule &rarr;
+                                            View Masses & Book &rarr;
                                         </Link>
                                     </div>
                                 </div>

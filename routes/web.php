@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\ChurchStatus;
+use App\Enums\MassStatus;
 use App\Http\Controllers\Admin\ChurchRegistrationController;
 use App\Http\Controllers\Admin\ChurchVerificationController;
 use App\Http\Controllers\Admin\PaymentReviewController;
@@ -20,15 +22,31 @@ use App\Http\Controllers\Public\ChurchDirectoryController;
 use App\Http\Controllers\Public\OrderBookingController;
 use App\Http\Controllers\User\OrderRequestController;
 use App\Http\Controllers\User\OrderTrackingController;
+use App\Models\Church;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
+    $publishedChurches = Church::query()
+        ->where('status', ChurchStatus::Published)
+        ->with([
+            'branding',
+            'massSchedules' => function ($query) {
+                $query->where('status', MassStatus::Scheduled)
+                    ->where('booking_status', 'open')
+                    ->where('booking_cutoff_at', '>', now())
+                    ->orderBy('starts_at')
+                    ->limit(4);
+            },
+        ])
+        ->get();
+
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
+        'publishedChurches' => $publishedChurches,
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
