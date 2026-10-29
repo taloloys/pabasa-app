@@ -62,7 +62,7 @@ class OrderBookingController extends Controller
             'pricingConfig' => $pricingConfig ? [
                 'id' => $pricingConfig->id,
                 'currency' => $pricingConfig->currency,
-                'price_per_intention' => $pricingConfig->pricing_rules['base_price_per_intention'] ?? '50.00',
+                'price_per_intention' => $pricingConfig->pricing_rules['base_price_per_intention'] ?? null,
             ] : null,
             'user' => $request->user() ? [
                 'name' => $request->user()->name,

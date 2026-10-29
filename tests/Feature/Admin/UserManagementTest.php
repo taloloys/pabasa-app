@@ -278,4 +278,3 @@ class UserManagementTest extends TestCase
         $this->assertEquals(UserStatus::Active, $targetUser->fresh()->status);
     }
 }
-

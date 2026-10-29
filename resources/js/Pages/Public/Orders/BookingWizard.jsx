@@ -9,7 +9,8 @@ import { useMemo, useState } from 'react';
 export default function BookingWizard({ church, mass, categories, pricingConfig, user }) {
     const [step, setStep] = useState(1);
 
-    const pricePerIntention = parseFloat(pricingConfig?.price_per_intention || '50.00');
+    const hasApprovedPricing = Boolean(pricingConfig && pricingConfig.price_per_intention);
+    const pricePerIntention = hasApprovedPricing ? parseFloat(pricingConfig.price_per_intention) : 0;
     const currency = pricingConfig?.currency || 'PHP';
 
     const { data, setData, post, processing, errors } = useForm({
@@ -333,23 +334,37 @@ export default function BookingWizard({ church, mass, categories, pricingConfig,
                             </div>
 
                             {/* Financial Summary */}
-                            <div className="p-4 rounded-lg bg-gold-50/70 border border-gold-300/80 space-y-2 text-xs">
-                                <span className="font-cinzel font-bold text-stone-900 uppercase tracking-wider block">
-                                    Offering Calculation
-                                </span>
-                                <div className="flex justify-between py-1 border-b border-gold-200">
-                                    <span>Intentions Count:</span>
-                                    <span className="font-semibold text-stone-800">{data.intentions.length} intention(s)</span>
+                            {!hasApprovedPricing ? (
+                                <div className="p-4 rounded-lg bg-amber-50 border border-amber-300 text-xs text-amber-900 space-y-1">
+                                    <div className="font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1.5">
+                                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                        Configuration Required
+                                    </div>
+                                    <p>
+                                        No approved intention offering rate is currently active for this parish. Submissions are temporarily paused until configured by diocese administration.
+                                    </p>
                                 </div>
-                                <div className="flex justify-between py-1 border-b border-gold-200">
-                                    <span>Approved Rate:</span>
-                                    <span>{currency} {pricePerIntention.toFixed(2)} each</span>
+                            ) : (
+                                <div className="p-4 rounded-lg bg-gold-50/70 border border-gold-300/80 space-y-2 text-xs">
+                                    <span className="font-cinzel font-bold text-stone-900 uppercase tracking-wider block">
+                                        Offering Calculation
+                                    </span>
+                                    <div className="flex justify-between py-1 border-b border-gold-200">
+                                        <span>Intentions Count:</span>
+                                        <span className="font-semibold text-stone-800">{data.intentions.length} intention(s)</span>
+                                    </div>
+                                    <div className="flex justify-between py-1 border-b border-gold-200">
+                                        <span>Approved Rate:</span>
+                                        <span>{currency} {pricePerIntention.toFixed(2)} each</span>
+                                    </div>
+                                    <div className="flex justify-between py-1 text-sm font-bold text-liturgical-950">
+                                        <span>Total Offering Amount:</span>
+                                        <span>{currency} {totalCalculated}</span>
+                                    </div>
                                 </div>
-                                <div className="flex justify-between py-1 text-sm font-bold text-liturgical-950">
-                                    <span>Total Offering Amount:</span>
-                                    <span>{currency} {totalCalculated}</span>
-                                </div>
-                            </div>
+                            )}
 
                             {/* Privacy Acknowledged */}
                             <div className="flex items-start space-x-2 pt-2">
@@ -360,12 +375,14 @@ export default function BookingWizard({ church, mass, categories, pricingConfig,
                                     onChange={(e) => setData('privacy_acknowledged', e.target.checked)}
                                     className="rounded border-stone-300 text-liturgical-900 focus:ring-gold-500 mt-0.5 cursor-pointer"
                                     required
+                                    disabled={!hasApprovedPricing}
                                 />
                                 <label htmlFor="privacy_acknowledged" className="text-xs text-stone-600 leading-normal cursor-pointer">
                                     I acknowledge the privacy notice and agree that prayer intention names will be read during the Holy Mass and processed for parish recordkeeping.
                                 </label>
                             </div>
                             <InputError message={errors.privacy_acknowledged} />
+                            <InputError message={errors.pricing} />
 
                             <div className="flex justify-between items-center pt-4 border-t border-stone-100">
                                 <button
@@ -375,7 +392,7 @@ export default function BookingWizard({ church, mass, categories, pricingConfig,
                                 >
                                     &larr; Back
                                 </button>
-                                <PrimaryButton disabled={processing || !data.privacy_acknowledged} className="cursor-pointer">
+                                <PrimaryButton disabled={processing || !data.privacy_acknowledged || !hasApprovedPricing} className="cursor-pointer">
                                     {processing ? 'Submitting...' : 'Submit Intentions & Proceed to Payment &rarr;'}
                                 </PrimaryButton>
                             </div>

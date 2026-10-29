@@ -53,4 +53,3 @@ class UserPolicy
         return $actor->isCentralAdmin();
     }
 }
-
