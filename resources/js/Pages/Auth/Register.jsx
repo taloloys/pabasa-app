@@ -3,6 +3,7 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
+import { DoveIcon } from '@/Components/Icons';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function Register() {
@@ -31,8 +32,8 @@ export default function Register() {
 
             {/* Liturgical Note Banner */}
             <div className="mb-6 rounded-2xl border border-gold-300/60 bg-gradient-to-br from-ivory-50 via-gold-50/30 to-ivory-100 p-3.5 text-xs text-stone-700 space-y-1">
-                <div className="font-bold text-liturgical-950 flex items-center space-x-1.5">
-                    <span>🕊️</span>
+                <div className="font-bold text-liturgical-950 flex items-center space-x-2">
+                    <DoveIcon className="w-4 h-4 text-liturgical-900" />
                     <span>Parishioner Registration</span>
                 </div>
                 <p className="text-[11px] text-stone-600 leading-relaxed">

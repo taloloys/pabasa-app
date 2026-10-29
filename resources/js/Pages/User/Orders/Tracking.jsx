@@ -6,6 +6,7 @@ import StatusBadge from '@/Components/StatusBadge';
 import TextInput from '@/Components/TextInput';
 import { Head, Link } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { DoveIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@/Components/Icons';
 
 export default function OrderTracking({ orders = [] }) {
     const [search, setSearch] = useState('');
@@ -117,7 +118,7 @@ export default function OrderTracking({ orders = [] }) {
                 {/* Orders List */}
                 {filteredOrders.length === 0 ? (
                     <EmptyState
-                        icon="🕊️"
+                        icon={<DoveIcon className="w-8 h-8 text-gold-700" />}
                         title={orders.length === 0 ? "No Mass Intentions Submitted Yet" : "No Orders Match Your Search"}
                         description={
                             orders.length === 0
@@ -236,8 +237,9 @@ export default function OrderTracking({ orders = [] }) {
                                         <div className="rounded-xl p-4 bg-stone-50 border border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
                                             <div>
                                                 {isAwaitingPayment && (
-                                                    <div className="text-amber-800 font-medium">
-                                                        ⚠️ Order is awaiting GCash offering submission. Please complete payment to reserve these intentions.
+                                                    <div className="text-amber-800 font-medium flex items-center space-x-2">
+                                                        <ExclamationTriangleIcon className="w-4 h-4 text-amber-600 shrink-0" />
+                                                        <span>Order is awaiting GCash offering submission. Please complete payment to reserve these intentions.</span>
                                                     </div>
                                                 )}
                                                 {isUnderReview && (
@@ -246,16 +248,17 @@ export default function OrderTracking({ orders = [] }) {
                                                     </div>
                                                 )}
                                                 {isConfirmed && (
-                                                    <div className="text-emerald-900 font-medium flex items-center space-x-1.5">
-                                                        <span className="text-base">🕊️</span>
+                                                    <div className="text-emerald-900 font-medium flex items-center space-x-2">
+                                                        <CheckCircleIcon className="w-4 h-4 text-emerald-700 shrink-0" />
                                                         <span>
                                                             <strong>Verified & Confirmed:</strong> Your intentions have been enrolled into the official Mass Reading List for proclamation.
                                                         </span>
                                                     </div>
                                                 )}
                                                 {isActionRequired && (
-                                                    <div className="text-rose-800 font-medium">
-                                                        ⚠️ An exception was noted on your payment (e.g. short payment or unclear reference). Please contact parish administration.
+                                                    <div className="text-rose-800 font-medium flex items-center space-x-2">
+                                                        <ExclamationTriangleIcon className="w-4 h-4 text-rose-600 shrink-0" />
+                                                        <span>An exception was noted on your payment (e.g. short payment or unclear reference). Please contact parish administration.</span>
                                                     </div>
                                                 )}
                                             </div>

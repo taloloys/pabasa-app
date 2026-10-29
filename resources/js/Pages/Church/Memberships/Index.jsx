@@ -10,6 +10,7 @@ import StatusBadge from '@/Components/StatusBadge';
 import Card from '@/Components/Card';
 import Table from '@/Components/Table';
 import EmptyState from '@/Components/EmptyState';
+import { UsersIcon } from '@/Components/Icons';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
@@ -143,7 +144,7 @@ export default function MembershipIndex({ church, memberships = [], invitations 
                             {memberships.length === 0 ? (
                                 <Table.Empty colSpan={5}>
                                     <EmptyState
-                                        icon="👥"
+                                        icon={<UsersIcon className="w-7 h-7 text-gold-700" />}
                                         title="No Staff Members Found"
                                         description="No active or historical staff assignments exist yet for this parish."
                                         action={

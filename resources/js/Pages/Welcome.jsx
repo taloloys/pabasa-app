@@ -1,6 +1,14 @@
 import { Head, Link } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import LocaleSwitcher from '@/Components/LocaleSwitcher';
+import {
+    DoveIcon,
+    ClipboardListIcon,
+    ClockIcon,
+    MapPinIcon,
+    ShieldIcon,
+    ScrollIcon,
+} from '@/Components/Icons';
 
 export default function Welcome({ auth, publishedChurches = [] }) {
     const demoAccounts = [
@@ -193,14 +201,16 @@ export default function Welcome({ auth, publishedChurches = [] }) {
                                     href={route('churches.index')}
                                     className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-liturgical-800 via-liturgical-900 to-liturgical-950 px-8 py-4 text-xs font-bold uppercase tracking-wider text-gold-100 border border-gold-400/50 shadow-md shadow-liturgical-950/20 hover:from-liturgical-700 hover:to-liturgical-900 transition cursor-pointer"
                                 >
-                                    🕊️ Submit Prayer Intentions &rarr;
+                                    <DoveIcon className="w-4 h-4 mr-2 text-gold-300" />
+                                    <span>Submit Prayer Intentions &rarr;</span>
                                 </Link>
 
                                 <Link
                                     href={route('orders.tracking')}
                                     className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl border border-gold-300/80 bg-white/90 px-6 py-4 text-xs font-bold uppercase tracking-wider text-stone-800 hover:bg-ivory-100 hover:text-liturgical-950 transition shadow-2xs"
                                 >
-                                    📋 Track My Submitted Orders
+                                    <ClipboardListIcon className="w-4 h-4 mr-2 text-liturgical-900" />
+                                    <span>Track My Submitted Orders</span>
                                 </Link>
 
                                 <Link
@@ -264,14 +274,14 @@ export default function Welcome({ auth, publishedChurches = [] }) {
                                                     </div>
                                                 </div>
 
-                                                <div className="space-y-1 text-xs text-stone-600">
-                                                    <div className="flex items-center space-x-1.5 font-medium text-stone-900">
-                                                        <span>🕒</span>
+                                                <div className="space-y-1.5 text-xs text-stone-600">
+                                                    <div className="flex items-center space-x-2 font-medium text-stone-900">
+                                                        <ClockIcon className="w-3.5 h-3.5 text-gold-700 shrink-0" />
                                                         <span>{new Date(mass.starts_at).toLocaleString()}</span>
                                                     </div>
                                                     {mass.location_label && (
-                                                        <div className="flex items-center space-x-1.5 text-stone-500 text-[11px]">
-                                                            <span>📍</span>
+                                                        <div className="flex items-center space-x-2 text-stone-500 text-[11px]">
+                                                            <MapPinIcon className="w-3.5 h-3.5 text-stone-500 shrink-0" />
                                                             <span>{mass.location_label}</span>
                                                         </div>
                                                     )}
@@ -371,8 +381,8 @@ export default function Welcome({ auth, publishedChurches = [] }) {
                         {/* Sacred Architecture Pillars */}
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                             <div className="rounded-2xl border border-gold-300/60 bg-white/90 p-7 shadow-xs space-y-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-liturgical-100 border border-liturgical-200 text-xl">
-                                    🛡️
+                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-liturgical-100 border border-liturgical-200 text-liturgical-800">
+                                    <ShieldIcon className="w-5 h-5 text-liturgical-900" />
                                 </div>
                                 <h3
                                     className="text-base font-bold text-liturgical-950"
@@ -386,8 +396,8 @@ export default function Welcome({ auth, publishedChurches = [] }) {
                             </div>
 
                             <div className="rounded-2xl border border-gold-300/60 bg-white/90 p-7 shadow-xs space-y-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 border border-gold-200 text-xl">
-                                    📜
+                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 border border-gold-200 text-amber-800">
+                                    <ScrollIcon className="w-5 h-5 text-amber-800" />
                                 </div>
                                 <h3
                                     className="text-base font-bold text-liturgical-950"
@@ -401,8 +411,8 @@ export default function Welcome({ auth, publishedChurches = [] }) {
                             </div>
 
                             <div className="rounded-2xl border border-gold-300/60 bg-white/90 p-7 shadow-xs space-y-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 border border-emerald-200 text-xl">
-                                    🕊️
+                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800">
+                                    <DoveIcon className="w-5 h-5 text-emerald-800" />
                                 </div>
                                 <h3
                                     className="text-base font-bold text-liturgical-950"

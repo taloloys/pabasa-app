@@ -1,5 +1,6 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import LocaleSwitcher from '@/Components/LocaleSwitcher';
+import { ShieldIcon, ChurchIcon, ExclamationTriangleIcon } from '@/Components/Icons';
 import { Head, Link } from '@inertiajs/react';
 
 export default function ErrorPage({ status = 404, message = null }) {
@@ -27,8 +28,14 @@ export default function ErrorPage({ status = 404, message = null }) {
             </header>
 
             <div className="w-full max-w-md text-center py-12">
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-amber-50 border border-amber-200 text-3xl shadow-xs">
-                    {status === 403 ? '🛡️' : status === 404 ? '⛪' : '⚠️'}
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-amber-50 border border-amber-200 shadow-xs">
+                    {status === 403 ? (
+                        <ShieldIcon className="w-10 h-10 text-liturgical-900" />
+                    ) : status === 404 ? (
+                        <ChurchIcon className="w-10 h-10 text-amber-800" />
+                    ) : (
+                        <ExclamationTriangleIcon className="w-10 h-10 text-rose-700" />
+                    )}
                 </div>
 
                 <div className="mt-6 inline-block rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-slate-600">

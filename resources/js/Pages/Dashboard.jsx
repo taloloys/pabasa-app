@@ -1,5 +1,13 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import StatusBadge from '@/Components/StatusBadge';
+import {
+    ChurchIcon,
+    ClipboardListIcon,
+    ShieldIcon,
+    CalendarIcon,
+    BookOpenIcon,
+    TagIcon,
+} from '@/Components/Icons';
 import { Head, Link, usePage } from '@inertiajs/react';
 
 export default function Dashboard() {
@@ -40,8 +48,8 @@ export default function Dashboard() {
                     <div className="relative overflow-hidden rounded-2xl border border-gold-300/70 bg-white p-7 shadow-xs hover:border-gold-400 hover:shadow-md transition flex flex-col justify-between ring-1 ring-gold-400/20 group">
                         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-liturgical-800 via-gold-500 to-liturgical-800" />
                         <div>
-                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-ivory-100 text-gold-700 border border-gold-200 text-2xl font-bold mb-4 shadow-2xs group-hover:scale-105 transition-transform duration-200">
-                                ⛪
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-ivory-100 text-gold-700 border border-gold-200 mb-4 shadow-2xs group-hover:scale-105 transition-transform duration-200">
+                                <ChurchIcon className="w-6 h-6 text-gold-700" />
                             </div>
                             <h3
                                 className="text-base font-bold text-liturgical-950 font-serif"
@@ -67,8 +75,8 @@ export default function Dashboard() {
                     <div className="relative overflow-hidden rounded-2xl border border-gold-300/70 bg-white p-7 shadow-xs hover:border-gold-400 hover:shadow-md transition flex flex-col justify-between ring-1 ring-gold-400/20 group">
                         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-400" />
                         <div>
-                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-ivory-100 text-gold-700 border border-gold-200 text-2xl font-bold mb-4 shadow-2xs group-hover:scale-105 transition-transform duration-200">
-                                📋
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-ivory-100 text-liturgical-800 border border-gold-200 mb-4 shadow-2xs group-hover:scale-105 transition-transform duration-200">
+                                <ClipboardListIcon className="w-6 h-6 text-liturgical-800" />
                             </div>
                             <h3
                                 className="text-base font-bold text-liturgical-950 font-serif"
@@ -95,8 +103,8 @@ export default function Dashboard() {
                         <div className="relative overflow-hidden rounded-2xl border border-liturgical-300 bg-gradient-to-br from-liturgical-50 via-white to-ivory-50 p-7 shadow-xs flex flex-col justify-between ring-1 ring-liturgical-400/30 group">
                             <div className="absolute top-0 inset-x-0 h-1 bg-liturgical-800" />
                             <div>
-                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-liturgical-100 text-liturgical-900 border border-liturgical-200 text-xl font-bold mb-4 shadow-2xs group-hover:scale-105 transition-transform duration-200">
-                                    🛡️
+                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-liturgical-100 text-liturgical-900 border border-liturgical-200 mb-4 shadow-2xs group-hover:scale-105 transition-transform duration-200">
+                                    <ShieldIcon className="w-6 h-6 text-liturgical-900" />
                                 </div>
                                 <div className="flex items-center space-x-2">
                                     <h3
@@ -111,16 +119,16 @@ export default function Dashboard() {
                                     Diocese-wide parish approvals, canonical verification rules, and system-wide append-only audit trail.
                                 </p>
 
-                                <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]">
+                                <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
                                     <Link
                                         href={route('admin.payments.index')}
-                                        className="px-2 py-0.5 rounded bg-liturgical-100 text-liturgical-900 font-semibold hover:bg-liturgical-200 transition"
+                                        className="px-2.5 py-1 rounded bg-liturgical-100 text-liturgical-900 font-semibold hover:bg-liturgical-200 transition"
                                     >
                                         Review Payments
                                     </Link>
                                     <Link
                                         href={route('admin.users.index')}
-                                        className="px-2 py-0.5 rounded bg-liturgical-100 text-liturgical-900 font-semibold hover:bg-liturgical-200 transition"
+                                        className="px-2.5 py-1 rounded bg-liturgical-100 text-liturgical-900 font-semibold hover:bg-liturgical-200 transition"
                                     >
                                         Staff & Users
                                     </Link>
@@ -145,8 +153,8 @@ export default function Dashboard() {
                         >
                             <div className="absolute top-0 inset-x-0 h-1 bg-amber-600" />
                             <div>
-                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-800 border border-gold-200 text-2xl font-bold mb-4 shadow-2xs group-hover:scale-105 transition-transform duration-200">
-                                    ⛪
+                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-800 border border-gold-200 mb-4 shadow-2xs group-hover:scale-105 transition-transform duration-200">
+                                    <ChurchIcon className="w-6 h-6 text-amber-800" />
                                 </div>
                                 <div className="flex items-center space-x-2">
                                     <h3
@@ -164,35 +172,39 @@ export default function Dashboard() {
                                 </p>
 
                                 {membership.role === 'church_admin' && (
-                                    <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]">
+                                    <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
                                         <Link
                                             href={route('church.masses.index', { church: membership.church_id })}
-                                            className="px-2 py-0.5 rounded bg-gold-100 text-gold-950 font-semibold hover:bg-gold-200 transition"
+                                            className="inline-flex items-center space-x-1 px-2.5 py-1 rounded bg-gold-100 text-gold-950 font-semibold hover:bg-gold-200 transition"
                                         >
-                                            📅 Mass Schedules
+                                            <CalendarIcon className="w-3.5 h-3.5" />
+                                            <span>Mass Schedules</span>
                                         </Link>
                                         <Link
                                             href={route('church.lectors.matrix', { church: membership.church_id })}
-                                            className="px-2 py-0.5 rounded bg-sky-100 text-sky-950 font-semibold hover:bg-sky-200 transition"
+                                            className="inline-flex items-center space-x-1 px-2.5 py-1 rounded bg-sky-100 text-sky-950 font-semibold hover:bg-sky-200 transition"
                                         >
-                                            📖 Lectors Matrix
+                                            <BookOpenIcon className="w-3.5 h-3.5" />
+                                            <span>Lectors Matrix</span>
                                         </Link>
                                         <Link
                                             href={route('church.categories.index', { church: membership.church_id })}
-                                            className="px-2 py-0.5 rounded bg-amber-100 text-amber-950 font-semibold hover:bg-amber-200 transition"
+                                            className="inline-flex items-center space-x-1 px-2.5 py-1 rounded bg-amber-100 text-amber-950 font-semibold hover:bg-amber-200 transition"
                                         >
-                                            🏷️ Categories
+                                            <TagIcon className="w-3.5 h-3.5" />
+                                            <span>Categories</span>
                                         </Link>
                                     </div>
                                 )}
 
                                 {membership.role === 'lector' && (
-                                    <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]">
+                                    <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
                                         <Link
                                             href={route('lector.masses.index', { church: membership.church_id })}
-                                            className="px-2 py-0.5 rounded bg-sky-100 text-sky-950 font-semibold hover:bg-sky-200 transition"
+                                            className="inline-flex items-center space-x-1 px-2.5 py-1 rounded bg-sky-100 text-sky-950 font-semibold hover:bg-sky-200 transition"
                                         >
-                                            📅 My Assigned Masses
+                                            <CalendarIcon className="w-3.5 h-3.5" />
+                                            <span>My Assigned Masses</span>
                                         </Link>
                                     </div>
                                 )}

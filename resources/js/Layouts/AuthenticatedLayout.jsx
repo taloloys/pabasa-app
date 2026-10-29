@@ -5,6 +5,14 @@ import LocaleSwitcher from '@/Components/LocaleSwitcher';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import StatusBadge from '@/Components/StatusBadge';
+import {
+    ChartBarIcon,
+    CalendarIcon,
+    BookOpenIcon,
+    TagIcon,
+    UsersIcon,
+    ChurchIcon,
+} from '@/Components/Icons';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
@@ -319,7 +327,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
                                 }`}
                             >
-                                <span>📊 Overview</span>
+                                <ChartBarIcon className="w-3.5 h-3.5" />
+                                <span>Overview</span>
                             </Link>
 
                             <Link
@@ -330,7 +339,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
                                 }`}
                             >
-                                <span>📅 Mass Schedules</span>
+                                <CalendarIcon className="w-3.5 h-3.5" />
+                                <span>Mass Schedules</span>
                             </Link>
 
                             <Link
@@ -341,7 +351,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
                                 }`}
                             >
-                                <span>📖 Lector Roster</span>
+                                <BookOpenIcon className="w-3.5 h-3.5" />
+                                <span>Lector Roster</span>
                             </Link>
 
                             <Link
@@ -352,7 +363,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
                                 }`}
                             >
-                                <span>🏷️ Categories</span>
+                                <TagIcon className="w-3.5 h-3.5" />
+                                <span>Categories</span>
                             </Link>
 
                             <Link
@@ -363,7 +375,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
                                 }`}
                             >
-                                <span>👥 Staff</span>
+                                <UsersIcon className="w-3.5 h-3.5" />
+                                <span>Staff</span>
                             </Link>
 
                             <Link
@@ -374,7 +387,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
                                 }`}
                             >
-                                <span>⛪ Profile & Branding</span>
+                                <ChurchIcon className="w-3.5 h-3.5" />
+                                <span>Profile & Branding</span>
                             </Link>
                         </div>
                     </div>
@@ -394,7 +408,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-sky-50'
                                 }`}
                             >
-                                <span>📖 Lector Console</span>
+                                <BookOpenIcon className="w-3.5 h-3.5" />
+                                <span>Lector Console</span>
                             </Link>
 
                             <Link
@@ -405,7 +420,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-sky-50'
                                 }`}
                             >
-                                <span>📅 Assigned Masses</span>
+                                <CalendarIcon className="w-3.5 h-3.5" />
+                                <span>Assigned Masses</span>
                             </Link>
                         </div>
                     </div>

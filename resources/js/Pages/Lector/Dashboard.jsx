@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import StatusBadge from '@/Components/StatusBadge';
+import { BookOpenIcon, DoveIcon } from '@/Components/Icons';
 import { Head } from '@inertiajs/react';
 
 export default function LectorDashboard({ church }) {
@@ -34,8 +35,8 @@ export default function LectorDashboard({ church }) {
                 {/* Liturgical Guidelines Banner */}
                 <div className="relative overflow-hidden rounded-3xl border border-gold-300/80 bg-gradient-to-r from-liturgical-900 via-liturgical-950 to-stone-950 p-7 text-gold-100 shadow-lg ring-1 ring-gold-400/30">
                     <div className="relative z-10 flex items-start space-x-5">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gold-500/20 text-gold-300 border border-gold-400/40 text-2xl shadow-inner">
-                            📖
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gold-500/20 text-gold-300 border border-gold-400/40 shadow-inner">
+                            <BookOpenIcon className="w-6 h-6 text-gold-300" />
                         </div>
                         <div className="space-y-1.5">
                             <div className="text-[10px] font-serif uppercase tracking-widest text-gold-400">
@@ -70,7 +71,9 @@ export default function LectorDashboard({ church }) {
                         </div>
 
                         <div className="rounded-2xl border border-dashed border-gold-200 bg-ivory-50/60 p-8 text-center space-y-2">
-                            <div className="text-3xl">🕊️</div>
+                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gold-100/70 border border-gold-300 text-gold-800">
+                                <DoveIcon className="w-6 h-6 text-gold-800" />
+                            </div>
                             <div
                                 className="font-bold text-liturgical-950 text-sm font-serif"
                                 style={{ fontFamily: 'var(--font-cinzel, Georgia, serif)' }}

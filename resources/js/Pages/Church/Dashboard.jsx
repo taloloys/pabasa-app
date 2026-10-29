@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import StatusBadge from '@/Components/StatusBadge';
+import { CalendarIcon, BookOpenIcon, TagIcon, ChurchIcon } from '@/Components/Icons';
 import { Head, Link } from '@inertiajs/react';
 
 export default function ChurchDashboard({ church, stats, recent_audit_logs = [] }) {
@@ -109,8 +110,8 @@ export default function ChurchDashboard({ church, stats, recent_audit_logs = [] 
                         >
                             <div className="absolute top-0 inset-x-0 h-1 bg-liturgical-800" />
                             <div>
-                                <div className="w-10 h-10 rounded-xl bg-ivory-100 border border-gold-200 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
-                                    📅
+                                <div className="w-10 h-10 rounded-xl bg-ivory-100 border border-gold-200 flex items-center justify-center text-liturgical-900 mb-3 group-hover:scale-110 transition-transform">
+                                    <CalendarIcon className="w-5 h-5" />
                                 </div>
                                 <h4 className="font-cinzel text-sm font-bold text-liturgical-950 group-hover:text-gold-700 transition">
                                     Mass Schedule Builder
@@ -132,8 +133,8 @@ export default function ChurchDashboard({ church, stats, recent_audit_logs = [] 
                         >
                             <div className="absolute top-0 inset-x-0 h-1 bg-sky-600" />
                             <div>
-                                <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
-                                    📖
+                                <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-800 mb-3 group-hover:scale-110 transition-transform">
+                                    <BookOpenIcon className="w-5 h-5" />
                                 </div>
                                 <h4 className="font-cinzel text-sm font-bold text-liturgical-950 group-hover:text-sky-700 transition">
                                     Lector Matrix Board
@@ -155,8 +156,8 @@ export default function ChurchDashboard({ church, stats, recent_audit_logs = [] 
                         >
                             <div className="absolute top-0 inset-x-0 h-1 bg-amber-600" />
                             <div>
-                                <div className="w-10 h-10 rounded-xl bg-amber-50 border border-gold-200 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
-                                    🏷️
+                                <div className="w-10 h-10 rounded-xl bg-amber-50 border border-gold-200 flex items-center justify-center text-amber-800 mb-3 group-hover:scale-110 transition-transform">
+                                    <TagIcon className="w-5 h-5" />
                                 </div>
                                 <h4 className="font-cinzel text-sm font-bold text-liturgical-950 group-hover:text-amber-800 transition">
                                     Intention Categories
@@ -178,8 +179,8 @@ export default function ChurchDashboard({ church, stats, recent_audit_logs = [] 
                         >
                             <div className="absolute top-0 inset-x-0 h-1 bg-gold-600" />
                             <div>
-                                <div className="w-10 h-10 rounded-xl bg-ivory-100 border border-gold-200 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
-                                    ⛪
+                                <div className="w-10 h-10 rounded-xl bg-ivory-100 border border-gold-200 flex items-center justify-center text-gold-700 mb-3 group-hover:scale-110 transition-transform">
+                                    <ChurchIcon className="w-5 h-5" />
                                 </div>
                                 <h4 className="font-cinzel text-sm font-bold text-liturgical-950 group-hover:text-gold-700 transition">
                                     Parish Profile & Details
@@ -210,26 +211,26 @@ export default function ChurchDashboard({ church, stats, recent_audit_logs = [] 
                         </div>
                         <dl className="space-y-3.5 text-xs text-stone-700">
                             <div>
-                                <dt className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Physical Address</dt>
+                                <dt className="text-xs font-semibold uppercase tracking-wider text-stone-500">Physical Address</dt>
                                 <dd className="font-semibold text-stone-900 mt-0.5">
                                     {church.address || 'Address unconfigured'}, {church.city}, {church.province}
                                 </dd>
                             </div>
                             <div>
-                                <dt className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Pastoral Email</dt>
+                                <dt className="text-xs font-semibold uppercase tracking-wider text-stone-500">Pastoral Email</dt>
                                 <dd className="font-semibold text-liturgical-900 mt-0.5 font-mono">
                                     {church.contact_email || 'None registered'}
                                 </dd>
                             </div>
                             <div>
-                                <dt className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Pastoral Telephone</dt>
+                                <dt className="text-xs font-semibold uppercase tracking-wider text-stone-500">Pastoral Telephone</dt>
                                 <dd className="font-semibold text-stone-900 mt-0.5">
                                     {church.contact_phone || 'None registered'}
                                 </dd>
                             </div>
                             <div>
-                                <dt className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Canonical Slug</dt>
-                                <dd className="font-mono text-[11px] text-stone-600 mt-0.5 bg-ivory-100 px-2 py-1 rounded border border-gold-200">
+                                <dt className="text-xs font-semibold uppercase tracking-wider text-stone-500">Canonical Slug</dt>
+                                <dd className="font-mono text-xs text-stone-600 mt-0.5 bg-ivory-100 px-2 py-1 rounded border border-gold-200">
                                     {church.slug}
                                 </dd>
                             </div>

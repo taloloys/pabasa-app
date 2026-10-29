@@ -1,5 +1,7 @@
+import { DoveIcon } from '@/Components/Icons';
+
 export default function EmptyState({
-    icon = '🕊️',
+    icon = <DoveIcon className="w-7 h-7 text-gold-700" />,
     title = 'No items to display',
     description = 'There are no records found for this view.',
     action = null,
@@ -7,9 +9,9 @@ export default function EmptyState({
 }) {
     return (
         <div
-            className={`rounded-xl border border-dashed border-slate-200 bg-white/70 p-10 text-center shadow-xs ${className}`}
+            className={`rounded-xl border border-dashed border-gold-200/80 bg-white/70 p-10 text-center shadow-xs ${className}`}
         >
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-2xl">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gold-50 border border-gold-200 text-gold-700 shadow-2xs">
                 {icon}
             </div>
             <h3 className="mt-4 text-base font-semibold text-slate-800">
