@@ -25,20 +25,20 @@ flowchart TD
 
 ### Phase 0 — Stack Setup
 
-**Status:** ⬜ Not started
+**Status:** ✅ Completed
 
 > Pre-requisite before any feature work. Not in the spec but required because the project is a fresh Laravel skeleton.
 
 **Deliverables:**
 
-- [ ] Install Inertia.js (server adapter + client)
-- [ ] Install React 19 + @inertiajs/react
-- [ ] Install Laravel Breeze with Inertia/React variant (auth scaffolding)
-- [ ] Switch default DB to MySQL 8.4 in `.env.example` and `config/database.php`
-- [ ] Install Ziggy for named route access in React
-- [ ] Configure 3 locales: `en`, `fil`, `ceb`
-- [ ] Set up directory structure per spec §2
-- [ ] Verify Docker Compose boots cleanly with MySQL 8.4 + Redis 7
+- [x] Install Inertia.js (server adapter + client)
+- [x] Install React 19 + @inertiajs/react
+- [x] Install Laravel Breeze with Inertia/React variant (auth scaffolding)
+- [x] Switch default DB to MySQL 8.4 in `.env.example` and `config/database.php`
+- [x] Install Ziggy for named route access in React
+- [x] Configure 3 locales: `en`, `fil`, `ceb`
+- [x] Set up directory structure per spec §2
+- [x] Verify Docker Compose boots cleanly with MySQL 8.4 + Redis 7
 
 **Acceptance:** Project runs with Inertia/React, auth works, MySQL is default.
 
@@ -405,7 +405,7 @@ php artisan test --coverage
 
 | Phase | Deliverables | Tests | Status |
 |---|---|---|---|
-| Phase 0 — Stack Setup | 8 items | — | ⬜ Not started |
+| Phase 0 — Stack Setup | 8 items | — | ✅ Completed |
 | Phase 1 — Foundation & Security | 8 items | 16 cases | ⬜ Not started |
 | Phase 2 — Directory & Scheduling | 9 items | 18 cases | ⬜ Not started |
 | Phase 3 — Orders & Payments | 10 items | 30 cases | ⬜ Not started |
