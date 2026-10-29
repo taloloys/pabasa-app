@@ -1,0 +1,59 @@
+﻿services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_DATABASE: pabasa
+      DB_USERNAME: pabasa
+      DB_PASSWORD: local_dev_password
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: pabasa
+      MYSQL_USER: pabasa
+      MYSQL_PASSWORD: local_dev_password
+      MYSQL_ROOT_PASSWORD: local_root_password
+    ports:
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  node:
+    image: node:22-alpine
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+
+volumes:
+  mysql_data:
