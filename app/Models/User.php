@@ -55,6 +55,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(AuditLog::class, 'actor_user_id');
     }
 
+    public function massAssignments(): HasMany
+    {
+        return $this->hasMany(MassAssignment::class);
+    }
+
     public function isCentralAdmin(): bool
     {
         return (bool) $this->is_central_admin;

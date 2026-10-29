@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Church extends Model
 {
@@ -67,6 +68,31 @@ class Church extends Model
     public function invitations(): HasMany
     {
         return $this->hasMany(Invitation::class);
+    }
+
+    public function branding(): HasOne
+    {
+        return $this->hasOne(ChurchBranding::class);
+    }
+
+    public function categories(): HasMany
+    {
+        return $this->hasMany(ChurchCategory::class);
+    }
+
+    public function massSeries(): HasMany
+    {
+        return $this->hasMany(MassSeries::class);
+    }
+
+    public function massSchedules(): HasMany
+    {
+        return $this->hasMany(MassSchedule::class);
+    }
+
+    public function massAssignments(): HasMany
+    {
+        return $this->hasMany(MassAssignment::class);
     }
 
     public function verifiedBy(): BelongsTo

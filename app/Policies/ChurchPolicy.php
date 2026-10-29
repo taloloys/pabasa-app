@@ -48,6 +48,11 @@ class ChurchPolicy
         return $user->hasRoleInChurch($church, MembershipRole::ChurchAdmin);
     }
 
+    public function branding(User $user, Church $church): bool
+    {
+        return $user->hasRoleInChurch($church, MembershipRole::ChurchAdmin);
+    }
+
     public function verify(User $user, Church $church): bool
     {
         return false; // Only Central Admin

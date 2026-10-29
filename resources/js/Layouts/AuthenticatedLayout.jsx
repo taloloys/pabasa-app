@@ -56,6 +56,13 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </NavLink>
 
                                 <NavLink
+                                    href={route('churches.index')}
+                                    active={route().current('churches.*')}
+                                >
+                                    Parishes
+                                </NavLink>
+
+                                <NavLink
                                     href={route('orders.tracking')}
                                     active={route().current('orders.tracking')}
                                 >
@@ -199,6 +206,13 @@ export default function AuthenticatedLayout({ header, children }) {
                             active={route().current('dashboard')}
                         >
                             Sanctuary
+                        </ResponsiveNavLink>
+
+                        <ResponsiveNavLink
+                            href={route('churches.index')}
+                            active={route().current('churches.*')}
+                        >
+                            Parishes
                         </ResponsiveNavLink>
 
                         <ResponsiveNavLink

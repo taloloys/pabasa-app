@@ -96,51 +96,51 @@ flowchart TD
 
 ### Phase 2 — Church Directory & Mass Scheduling UI
 
-**Status:** ⬜ Not started  
+**Status:** ✅ Completed  
 **Spec section:** §11 Phase 2  
 
 #### 1. Backend Track
-- [ ] Migrations: `church_branding`, `church_categories`, `mass_series`, `mass_schedules`, `mass_assignments`
-- [ ] Backed PHP enums: `BookingStatus`, `MassStatus`
-- [ ] Policy: `MassSchedulePolicy`
-- [ ] Church verification / publication / suspension workflow
-- [ ] Categories management (church-defined, deactivate not delete)
-- [ ] Mass schedules: recurring series/occurrences, booking windows, cutoffs
-- [ ] Lector assignments
-- [ ] Conflict detection (shared resources/staff, not blanket overlap rejection)
+- [x] Migrations: `church_branding`, `church_categories`, `mass_series`, `mass_schedules`, `mass_assignments`
+- [x] Backed PHP enums: `BookingStatus`, `MassStatus`
+- [x] Policy: `MassSchedulePolicy`
+- [x] Church verification / publication / suspension workflow
+- [x] Categories management (church-defined, deactivate not delete)
+- [x] Mass schedules: recurring series/occurrences, booking windows, cutoffs
+- [x] Lector assignments
+- [x] Conflict detection (shared resources/staff, not blanket overlap rejection)
 
 #### 2. UI/UX Track (Inertia + React 19)
-- [ ] **Public Church Directory:** Search bar, diocese/city filters, parish cards with cover photo/logo, published status badges, and church profile page
-- [ ] **Public Mass Schedule View:** Calendar and list views of upcoming Masses, language tags, chapel locations, booking status badges, and live cutoff countdown indicators
-- [ ] **Church Admin Schedule Builder:** Recurring schedule generator, single-occurrence exception editor, cutoff and booking window selectors, and resource conflict alerts
-- [ ] **Intention Categories Manager:** Custom category creation table, color tags, activation toggle, and deactivation warning modal
-- [ ] **Lector Assignment Matrix:** Visual schedule board assigning verified lectors to Masses with conflict detection warnings
+- [x] **Public Church Directory:** Search bar, diocese/city filters, parish cards with cover photo/logo, published status badges, and church profile page
+- [x] **Public Mass Schedule View:** Calendar and list views of upcoming Masses, language tags, chapel locations, booking status badges, and live cutoff countdown indicators
+- [x] **Church Admin Schedule Builder:** Recurring schedule generator, single-occurrence exception editor, cutoff and booking window selectors, and resource conflict alerts
+- [x] **Intention Categories Manager:** Custom category creation table, color tags, activation toggle, and deactivation warning modal
+- [x] **Lector Assignment Matrix:** Visual schedule board assigning verified lectors to Masses with conflict detection warnings
 
 #### 3. Wiring & Integration
-- [ ] Wire public church directory search and filtering to backend queries with debounced URL query params
-- [ ] Wire schedule builder form to backend recurring series actions with frontend date-range validation
-- [ ] Ensure non-published churches return 404 on public routes and render graceful not-found states
+- [x] Wire public church directory search and filtering to backend queries with debounced URL query params
+- [x] Wire schedule builder form to backend recurring series actions with frontend date-range validation
+- [x] Ensure non-published churches return 404 on public routes and render graceful not-found states
 
 **Test cases (18):**
 
-- [ ] 1. Draft/unverified/suspended/deactivated churches do not accept public submissions
-- [ ] 2. Only published churches appear in the public directory
-- [ ] 3. Central Admin can verify and publish a church; action is audited
-- [ ] 4. Church Admin cannot edit another church's profile or branding
-- [ ] 5. Church Admin can create/edit own church Masses
-- [ ] 6. Editing one occurrence does not silently alter other recurring occurrences
-- [ ] 7. Invalid or past booking windows are rejected
-- [ ] 8. Closed Mass remains visible but cannot be selected for submission
-- [ ] 9. New order creation is rejected after cutoff
-- [ ] 10. Assigned lector can close submissions early
-- [ ] 11. Lector cannot extend the cutoff beyond authorized limits
-- [ ] 12. Conflict detection considers configured shared resources/staff and allows unrelated chapel overlaps
-- [ ] 13. Lector cannot view unassigned Mass details by changing the URL ID
-- [ ] 14. Suspending a church blocks new orders but preserves existing orders/payments
-- [ ] 15. Mass cancellation creates a case and preserves original schedule data
-- [ ] 16. Schedule updates and staff assignments create audit events
-- [ ] 17. Church timezone is used consistently in displayed cutoff and schedule times
-- [ ] 18. Concurrent requests around cutoff cannot both bypass the cutoff rule
+- [x] 1. Draft/unverified/suspended/deactivated churches do not accept public submissions
+- [x] 2. Only published churches appear in the public directory
+- [x] 3. Central Admin can verify and publish a church; action is audited
+- [x] 4. Church Admin cannot edit another church's profile or branding
+- [x] 5. Church Admin can create/edit own church Masses
+- [x] 6. Editing one occurrence does not silently alter other recurring occurrences
+- [x] 7. Invalid or past booking windows are rejected
+- [x] 8. Closed Mass remains visible but cannot be selected for submission
+- [x] 9. New order creation is rejected after cutoff
+- [x] 10. Assigned lector can close submissions early
+- [x] 11. Lector cannot extend the cutoff beyond authorized limits
+- [x] 12. Conflict detection considers configured shared resources/staff and allows unrelated chapel overlaps
+- [x] 13. Lector cannot view unassigned Mass details by changing the URL ID
+- [x] 14. Suspending a church blocks new orders but preserves existing orders/payments
+- [x] 15. Mass cancellation creates a case and preserves original schedule data
+- [x] 16. Schedule updates and staff assignments create audit events
+- [x] 17. Church timezone is used consistently in displayed cutoff and schedule times
+- [x] 18. Concurrent requests around cutoff cannot both bypass the cutoff rule
 
 **Release gate:** Booking rules pass boundary-time and concurrent-request tests; public directory and schedule builder render responsively on mobile and desktop.
 
