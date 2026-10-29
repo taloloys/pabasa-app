@@ -236,15 +236,12 @@ export default function Show({ church, upcomingMasses, auth }) {
                                     {/* Action button */}
                                     <div className="shrink-0 flex items-center">
                                         {isOpen ? (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    alert(`Order submission flow opens in Phase 3 for Mass: ${mass.title}`);
-                                                }}
+                                            <Link
+                                                href={route('orders.create', { church: church.id, mass: mass.id })}
                                                 className="inline-flex items-center px-4 py-2 rounded-sm bg-liturgical-900 text-gold-200 hover:bg-liturgical-800 text-xs font-semibold tracking-wider uppercase transition shadow-2xs hover:shadow-xs cursor-pointer"
                                             >
                                                 Book Prayer Intention &rarr;
-                                            </button>
+                                            </Link>
                                         ) : (
                                             <button
                                                 disabled

@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\ChurchRegistrationController;
 use App\Http\Controllers\Admin\ChurchVerificationController;
+use App\Http\Controllers\Admin\PaymentReviewController;
 use App\Http\Controllers\Admin\StaffDashboardController;
 use App\Http\Controllers\Church\ChurchBrandingController;
 use App\Http\Controllers\Church\ChurchCategoryController;
@@ -9,10 +11,13 @@ use App\Http\Controllers\Church\InvitationController;
 use App\Http\Controllers\Church\LectorMatrixController;
 use App\Http\Controllers\Church\MassScheduleController;
 use App\Http\Controllers\Church\MembershipController;
+use App\Http\Controllers\Guest\GuestOrderTrackingController;
 use App\Http\Controllers\Lector\LectorDashboardController;
 use App\Http\Controllers\Lector\LectorMassController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Public\ChurchDirectoryController;
+use App\Http\Controllers\Public\OrderBookingController;
+use App\Http\Controllers\User\OrderRequestController;
 use App\Http\Controllers\User\OrderTrackingController;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
@@ -62,6 +67,19 @@ Route::post('/locale', function (Request $request) {
 Route::get('/churches', [ChurchDirectoryController::class, 'index'])->name('churches.index');
 Route::get('/churches/{slug}', [ChurchDirectoryController::class, 'show'])->name('churches.show');
 
+// Public Intention Booking & Payment Offering
+Route::get('/churches/{church}/masses/{mass}/book', [OrderBookingController::class, 'create'])->name('orders.create');
+Route::post('/orders', [OrderBookingController::class, 'store'])->name('orders.store');
+Route::post('/masses/{mass}/orders', [OrderBookingController::class, 'storeForMass'])->name('orders.store-for-mass');
+Route::get('/orders/{orderNumber}/payment', [OrderBookingController::class, 'payment'])->name('orders.payment');
+Route::post('/orders/{order}/evidence', [OrderBookingController::class, 'submitEvidence'])->name('orders.evidence');
+
+// Guest Order Tracking & Recovery
+Route::get('/guest/track/{token}', [GuestOrderTrackingController::class, 'show'])->name('guest.orders.show');
+Route::post('/guest/track/{token}/challenge', [GuestOrderTrackingController::class, 'verifyChallenge'])->name('guest.orders.challenge');
+Route::post('/guest/track/{token}/verify', [GuestOrderTrackingController::class, 'verifyChallenge'])->name('guest.orders.verify');
+Route::post('/guest/recover', [GuestOrderTrackingController::class, 'recover'])->middleware('throttle:10,1')->name('guest.orders.recover');
+
 // Invitations (Public show & Authenticated accept)
 Route::get('/invitations/{token}', [InvitationController::class, 'showAccept'])->name('invitations.show');
 Route::post('/invitations/accept', [InvitationController::class, 'accept'])
@@ -71,9 +89,19 @@ Route::post('/invitations/accept', [InvitationController::class, 'accept'])
 // Central Admin Staff Routes
 Route::middleware(['auth', 'ensure.staff:central_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [StaffDashboardController::class, 'index'])->name('dashboard');
+    Route::post('/churches', [ChurchRegistrationController::class, 'store'])->name('churches.store');
     Route::post('/churches/{church}/verify', [ChurchVerificationController::class, 'verify'])->name('churches.verify');
     Route::post('/churches/{church}/publish', [ChurchVerificationController::class, 'publish'])->name('churches.publish');
     Route::post('/churches/{church}/suspend', [ChurchVerificationController::class, 'suspend'])->name('churches.suspend');
+
+    // Payment Review Queue & Workbench
+    Route::get('/payments', [PaymentReviewController::class, 'index']);
+    Route::get('/payments/review', [PaymentReviewController::class, 'index'])->name('payments.index');
+    Route::get('/payments/{payment}', [PaymentReviewController::class, 'show']);
+    Route::get('/payments/{payment}/workbench', [PaymentReviewController::class, 'show'])->name('payments.workbench');
+    Route::get('/payments/{payment}/evidence/{evidence}', [PaymentReviewController::class, 'streamEvidence'])->name('payments.evidence');
+    Route::post('/payments/{payment}/verify', [PaymentReviewController::class, 'verify'])->name('payments.verify');
+    Route::post('/payments/{payment}/reject', [PaymentReviewController::class, 'reject'])->name('payments.reject');
 });
 
 // Church Staff Routes
@@ -122,6 +150,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Order Intention Edits & Change Requests
+    Route::patch('/orders/{order}/intentions', [OrderRequestController::class, 'updateIntentions'])->name('orders.intentions.update');
+    Route::put('/orders/{order}/intentions', [OrderRequestController::class, 'updateIntentions']);
+    Route::post('/orders/{order}/corrections', [OrderRequestController::class, 'requestCorrection'])->name('orders.corrections.store');
+    Route::post('/user/orders/{order}/requests/correction', [OrderRequestController::class, 'requestCorrection']);
+    Route::post('/orders/{order}/cancellations', [OrderRequestController::class, 'requestCancellation'])->name('orders.cancellations.store');
+    Route::post('/user/orders/{order}/requests/cancellation', [OrderRequestController::class, 'requestCancellation']);
+    Route::post('/orders/{order}/rescheduling', [OrderRequestController::class, 'requestRescheduling'])->name('orders.rescheduling.store');
+    Route::post('/user/orders/{order}/requests/rescheduling', [OrderRequestController::class, 'requestRescheduling']);
 });
 
 require __DIR__.'/auth.php';

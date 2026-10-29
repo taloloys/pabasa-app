@@ -80,6 +80,21 @@ class MassSchedule extends Model
         return $this->hasMany(MassAssignment::class)->where('status', MassAssignmentStatus::Active->value);
     }
 
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function intentions(): HasMany
+    {
+        return $this->hasMany(Intention::class);
+    }
+
+    public function readingList(): HasOne
+    {
+        return $this->hasOne(ReadingList::class);
+    }
+
     public function lectors(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'mass_assignments')

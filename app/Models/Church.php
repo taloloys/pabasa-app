@@ -95,6 +95,26 @@ class Church extends Model
         return $this->hasMany(MassAssignment::class);
     }
 
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function pricingConfigurations(): HasMany
+    {
+        return $this->hasMany(PricingConfiguration::class);
+    }
+
+    public function readingLists(): HasMany
+    {
+        return $this->hasMany(ReadingList::class);
+    }
+
     public function verifiedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by');
