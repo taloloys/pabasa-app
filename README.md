@@ -1,58 +1,125 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Pabasa — Multi-Church Reading-Intention System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+> A multi-tenant church reading-intention management platform for Catholic parishes and dioceses.
 
-## About Laravel
+Churches publish Mass schedules, parishioners (registered or guest) submit prayer intentions with GCash screenshot payment, Central Admin verifies payments, lectors manage reading lists during Mass, and settlements/payouts are tracked with full financial audit trails.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Documentation
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Canonical Specification:** [`multi_church_reading_system_development_specification.md`](multi_church_reading_system_development_specification.md) — The single source of truth for business rules, data models, state machines, and workflows.
+- **Development Phase Tracker:** [`DEV_PHASE.md`](DEV_PHASE.md) — Step-by-step implementation roadmap and deliverables from Phase 0 to Phase 6.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Tech Stack
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+| Layer | Technology | Version |
+|---|---|---|
+| **Backend** | Laravel | 13.x |
+| **Runtime** | PHP | 8.5 |
+| **Frontend** | React + Inertia.js | React 19, Inertia 2.x |
+| **Styling** | Tailwind CSS | 4.x |
+| **Build Tool** | Vite | 8.x |
+| **Database** | MySQL | 8.4 |
+| **Cache & Queue** | Redis | 7.x |
+| **Testing** | PHPUnit | 12.x |
+| **Code Style** | Laravel Pint | Latest |
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+---
 
-## Agentic Development
+## Core Roles & Capabilities
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+- **Central Admin (Global):** Validates and verifies GCash payment screenshots, handles refunds and disputes, manages church verification, and oversees platform financial settlements.
+- **Church Admin (Per-Church):** Configures church profile and branding, custom intention categories, Mass schedules, cutoff times, and assigns lectors to specific Masses.
+- **Lector (Per-Church & Per-Mass):** Manages the live prayer intention list during assigned Masses, reorders items, logs pronunciation corrections, and exports PDF reading lists.
+- **Registered User (Own Resources):** Submits prayer intentions, tracks order progress, views payment status history, and manages profile settings.
+- **Guest (Single Order):** Submits intentions without account registration, tracks order status using secure expiring tokens, and recovers access via email challenges.
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- [Docker Desktop](https://www.docker.com/) (recommended)
+- Alternatively: PHP 8.5, Composer, Node.js 22+, MySQL 8.4, and Redis 7 installed locally.
+
+### Development with Docker (Recommended)
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/taloloys/pabasa-app.git
+   cd pabasa-app
+   ```
+
+2. **Set up environment:**
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Start Docker containers:**
+   ```bash
+   docker compose up -d
+   ```
+   *Services exposed:*
+   - Application: `http://localhost:8000`
+   - Vite Dev Server (HMR): `http://localhost:5173`
+   - MySQL: `127.0.0.1:3307`
+   - Redis: `127.0.0.1:6379`
+
+4. **Initialize application:**
+   ```bash
+   docker compose exec app php artisan key:generate
+   docker compose exec app php artisan migrate
+   ```
+
+5. **Build frontend assets (or run Vite dev):**
+   ```bash
+   npm install
+   npm run build
+   # Or run Vite dev server:
+   npm run dev
+   ```
+
+---
+
+## Development Commands
 
 ```bash
-composer require laravel/boost --dev
+# Run tests (always against MySQL, never SQLite)
+docker compose exec app php artisan test
 
-php artisan boost:install
+# Run specific test suites
+docker compose exec app php artisan test --testsuite=Feature
+docker compose exec app php artisan test --testsuite=Unit
+
+# Check code formatting (Pint)
+docker compose exec app ./vendor/bin/pint --test
+
+# Fix code formatting
+docker compose exec app ./vendor/bin/pint
+
+# Run queue worker
+docker compose exec app php artisan queue:work
+
+# Run Laravel scheduler
+docker compose exec app php artisan schedule:run
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## Key Architectural Principles
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. **Strict Tenant Isolation:** Every church-owned record is scoped by `church_id`. Cross-tenant requests return `404 Not Found` (rather than `403 Forbidden`) to prevent resource enumeration.
+2. **Explicit Verification Gate:** Orders are never automatically confirmed upon screenshot upload; explicit Central Admin verification is required with transactional row locking (`lockForUpdate()`).
+3. **Decimal-Safe Financials:** All monetary amounts use `DECIMAL(12,2)` in the database and `bcmath` in PHP arithmetic. Floating-point math is strictly forbidden.
+4. **Append-Only Auditing:** Sensitive state transitions (payments, schedule changes, reading list adjustments, payouts) record immutable audit entries with actor, action, timestamp, and justification.
+5. **Localization:** Fully translatable interface supporting English (`en`), Filipino (`fil`), and Cebuano (`ceb`). User-submitted intention names and requests are preserved verbatim.
 
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is proprietary software developed for the Pabasa multi-church reading-intention network.
