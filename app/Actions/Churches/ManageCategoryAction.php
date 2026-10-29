@@ -37,9 +37,12 @@ class ManageCategoryAction
             $category = ChurchCategory::create([
                 'church_id' => $church->id,
                 'type' => $data['type'] ?? CategoryType::Intention->value,
+                'template_type' => $data['template_type'] ?? 'standard',
                 'key' => $key,
                 'label' => $data['label'],
                 'description' => $data['description'] ?? null,
+                'price' => isset($data['price']) && $data['price'] !== '' ? $data['price'] : null,
+                'form_config' => $data['form_config'] ?? null,
                 'color' => $data['color'] ?? null,
                 'is_active' => $data['is_active'] ?? true,
                 'is_system' => false,
@@ -51,6 +54,46 @@ class ManageCategoryAction
                 target: $category,
                 churchId: $church->id,
                 reason: "Category '{$category->label}' created.",
+                afterData: $category->toArray(),
+                actorUserId: $actor->id,
+            );
+
+            return $category;
+        });
+    }
+
+    public function update(ChurchCategory $category, array $data, User $actor): ChurchCategory
+    {
+        return DB::transaction(function () use ($category, $data, $actor) {
+            $before = $category->toArray();
+
+            $updateData = [
+                'label' => $data['label'] ?? $category->label,
+                'description' => array_key_exists('description', $data) ? $data['description'] : $category->description,
+                'color' => $data['color'] ?? $category->color,
+                'sort_order' => $data['sort_order'] ?? $category->sort_order,
+            ];
+
+            if (isset($data['template_type'])) {
+                $updateData['template_type'] = $data['template_type'];
+            }
+
+            if (array_key_exists('price', $data)) {
+                $updateData['price'] = ($data['price'] !== null && $data['price'] !== '') ? number_format((float) $data['price'], 2, '.', '') : null;
+            }
+
+            if (array_key_exists('form_config', $data)) {
+                $updateData['form_config'] = $data['form_config'];
+            }
+
+            $category->update($updateData);
+
+            $this->audit->record(
+                action: 'category.updated',
+                target: $category,
+                churchId: $category->church_id,
+                reason: "Category '{$category->label}' updated.",
+                beforeData: $before,
                 afterData: $category->toArray(),
                 actorUserId: $actor->id,
             );

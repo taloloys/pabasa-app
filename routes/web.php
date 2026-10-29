@@ -142,6 +142,7 @@ Route::middleware(['auth', 'ensure.staff:church_admin'])->prefix('churches/{chur
     // Categories
     Route::get('/categories', [ChurchCategoryController::class, 'index'])->name('categories.index');
     Route::post('/categories', [ChurchCategoryController::class, 'store'])->name('categories.store');
+    Route::patch('/categories/{category}', [ChurchCategoryController::class, 'update'])->name('categories.update');
     Route::post('/categories/{category}/toggle', [ChurchCategoryController::class, 'toggleActive'])->name('categories.toggle');
 
     // Mass Schedules

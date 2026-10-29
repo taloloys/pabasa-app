@@ -43,7 +43,10 @@ class ChurchCategoryController extends Controller
             'label' => ['required', 'string', 'max:100'],
             'key' => ['nullable', 'string', 'max:50'],
             'type' => ['required', 'string', 'in:intention,mass'],
-            'description' => ['nullable', 'string', 'max:500'],
+            'template_type' => ['nullable', 'string', 'in:standard,thanksgiving,souls,special'],
+            'price' => ['nullable', 'numeric', 'min:0', 'max:99999.99'],
+            'form_config' => ['nullable', 'array'],
+            'description' => ['nullable', 'string', 'max:1000'],
             'color' => ['nullable', 'string', 'max:50'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
         ]);
@@ -51,6 +54,29 @@ class ChurchCategoryController extends Controller
         $action->create($church, $validated, $request->user());
 
         return back()->with('success', "Category '{$validated['label']}' created.");
+    }
+
+    public function update(Request $request, Church $church, ChurchCategory $category, ManageCategoryAction $action): RedirectResponse
+    {
+        $this->authorize('update', $church);
+
+        if ($category->church_id !== $church->id && ! $category->is_system) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'label' => ['required', 'string', 'max:100'],
+            'template_type' => ['nullable', 'string', 'in:standard,thanksgiving,souls,special'],
+            'price' => ['nullable', 'numeric', 'min:0', 'max:99999.99'],
+            'form_config' => ['nullable', 'array'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'color' => ['nullable', 'string', 'max:50'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $action->update($category, $validated, $request->user());
+
+        return back()->with('success', "Category '{$category->label}' updated successfully.");
     }
 
     public function toggleActive(Request $request, Church $church, ChurchCategory $category, ManageCategoryAction $action): RedirectResponse

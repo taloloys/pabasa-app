@@ -121,7 +121,7 @@ class CreateOrderAction
         }
 
         // 6. Resolve approved pricing configuration (Rule 7: No invented pricing)
-        $pricing = $this->pricingResolver->resolve($church, count($intentionsData));
+        $pricing = $this->pricingResolver->resolve($church, $intentionsData);
 
         $submitterType = $actor ? 'registered_user' : 'guest';
         $submitterName = $actor ? $actor->name : trim($data['submitter_name'] ?? '');

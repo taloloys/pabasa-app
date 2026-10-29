@@ -91,8 +91,22 @@ class DatabaseSeeder extends Seeder
         $catThanksgiving = ChurchCategory::updateOrCreate(
             ['church_id' => $church->id, 'key' => 'thanksgiving'],
             [
-                'label' => 'Thanksgiving Offering',
+                'label' => 'Thanksgiving Mass',
                 'type' => CategoryType::Intention->value,
+                'template_type' => 'thanksgiving',
+                'price' => '150.00',
+                'form_config' => [
+                    'occasions' => [
+                        'Birthday Anniversary',
+                        'Wedding Anniversary',
+                        'Anniversary',
+                        'Passing the Exam',
+                        'New Job/Promotion',
+                        'Recovery/ Good health',
+                        'Graces & Blessing received',
+                        'Good Harvest',
+                    ],
+                ],
                 'color' => '#10B981',
                 'sort_order' => 1,
                 'is_active' => true,
@@ -102,8 +116,13 @@ class DatabaseSeeder extends Seeder
         $catSouls = ChurchCategory::updateOrCreate(
             ['church_id' => $church->id, 'key' => 'souls'],
             [
-                'label' => 'Eternal Repose (Souls of the Faithful Departed)',
+                'label' => 'Mass for the Souls of',
                 'type' => CategoryType::Intention->value,
+                'template_type' => 'souls',
+                'price' => '150.00',
+                'form_config' => [
+                    'max_souls' => 10,
+                ],
                 'color' => '#6366F1',
                 'sort_order' => 2,
                 'is_active' => true,
@@ -113,8 +132,13 @@ class DatabaseSeeder extends Seeder
         $catPetition = ChurchCategory::updateOrCreate(
             ['church_id' => $church->id, 'key' => 'petition'],
             [
-                'label' => 'Special Petitions & Guidance',
+                'label' => 'Special Mass Intention',
                 'type' => CategoryType::Intention->value,
+                'template_type' => 'special',
+                'price' => '150.00',
+                'form_config' => [
+                    'notes' => "1. We do not pay for the mass. Your donation (Arancel) is for the Parish Church operational expenses and evangelization programs.\n2. The inclusion in the intention does not substitute for the donor's presence in the Holy Mass.\n3. Write your intentions legibly.",
+                ],
                 'color' => '#F59E0B',
                 'sort_order' => 3,
                 'is_active' => true,
@@ -126,13 +150,15 @@ class DatabaseSeeder extends Seeder
             [
                 'label' => 'Healing & Fast Recovery',
                 'type' => CategoryType::Intention->value,
+                'template_type' => 'standard',
+                'price' => '150.00',
                 'color' => '#EC4899',
                 'sort_order' => 4,
                 'is_active' => true,
             ]
         );
 
-        // Approved Pricing Configuration (PHP 50.00 base rate per intention)
+        // Approved Pricing Configuration (PHP 150.00 base rate per intention/slip)
         $pricingConfig = PricingConfiguration::updateOrCreate(
             [
                 'church_id' => $church->id,
@@ -140,11 +166,11 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'scope' => 'church',
-                'name' => 'Cebu Cathedral Standard Offering Schedule 2026',
+                'name' => 'Parish Standard Offering Schedule 2026',
                 'status' => PricingStatus::Approved,
                 'currency' => 'PHP',
                 'pricing_rules' => [
-                    'base_price_per_intention' => '50.00',
+                    'base_price_per_intention' => '150.00',
                 ],
                 'effective_from' => now()->subDays(30),
                 'effective_until' => now()->addYear(),

@@ -9,7 +9,16 @@ export default function FlashMessage() {
     useEffect(() => {
         setDismissed(false);
         setCopied(false);
-    }, [flash]);
+
+        // Auto-dismiss success and error notifications after 5 seconds
+        if (flash?.success || flash?.error) {
+            const timer = setTimeout(() => {
+                setDismissed(true);
+            }, 5000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [flash?.success, flash?.error, flash?.raw_token]);
 
     if (dismissed || (!flash?.success && !flash?.error && !flash?.raw_token)) {
         return null;
@@ -23,18 +32,20 @@ export default function FlashMessage() {
     };
 
     return (
-        <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8 transition-all duration-300">
             {flash.success && (
-                <div className="mb-4 flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 shadow-xs">
+                <div className="mb-4 flex items-center justify-between rounded-lg border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-800 shadow-xs animate-in fade-in duration-300">
                     <div className="flex items-center space-x-3">
-                        <svg className="h-5 w-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="h-5 w-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        <span>{flash.success}</span>
+                        <span className="font-medium text-xs sm:text-sm">{flash.success}</span>
                     </div>
                     <button
+                        type="button"
                         onClick={() => setDismissed(true)}
-                        className="text-emerald-500 hover:text-emerald-700"
+                        className="text-emerald-500 hover:text-emerald-700 p-1 text-sm font-bold cursor-pointer"
+                        title="Dismiss"
                     >
                         ✕
                     </button>
@@ -42,16 +53,18 @@ export default function FlashMessage() {
             )}
 
             {flash.error && (
-                <div className="mb-4 flex items-center justify-between rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800 shadow-xs">
+                <div className="mb-4 flex items-center justify-between rounded-lg border border-rose-300 bg-rose-50 p-4 text-sm text-rose-800 shadow-xs animate-in fade-in duration-300">
                     <div className="flex items-center space-x-3">
-                        <svg className="h-5 w-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="h-5 w-5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span>{flash.error}</span>
+                        <span className="font-medium text-xs sm:text-sm">{flash.error}</span>
                     </div>
                     <button
+                        type="button"
                         onClick={() => setDismissed(true)}
-                        className="text-rose-500 hover:text-rose-700"
+                        className="text-rose-500 hover:text-rose-700 p-1 text-sm font-bold cursor-pointer"
+                        title="Dismiss"
                     >
                         ✕
                     </button>
@@ -72,7 +85,7 @@ export default function FlashMessage() {
                         <button
                             type="button"
                             onClick={() => copyToken(flash.raw_token)}
-                            className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer"
                         >
                             {copied ? '✓ Link Copied!' : 'Copy Invitation Link'}
                         </button>
@@ -85,4 +98,3 @@ export default function FlashMessage() {
         </div>
     );
 }
-

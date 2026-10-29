@@ -16,9 +16,12 @@ class ChurchCategory extends Model
     protected $fillable = [
         'church_id',
         'type',
+        'template_type',
         'key',
         'label',
         'description',
+        'price',
+        'form_config',
         'color',
         'is_active',
         'is_system',
@@ -32,6 +35,8 @@ class ChurchCategory extends Model
             'is_active' => 'boolean',
             'is_system' => 'boolean',
             'sort_order' => 'integer',
+            'price' => 'decimal:2',
+            'form_config' => 'array',
         ];
     }
 

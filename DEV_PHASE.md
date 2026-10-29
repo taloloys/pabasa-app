@@ -94,7 +94,7 @@ flowchart TD
 - [x] **Auth Screens Theming:** Adapt Breeze Login, Register, Forgot Password, and Profile pages to Pabasa branding with responsive layout and locale switcher (`en`, `fil`, `ceb`)
 - [x] **Staff Invitation Acceptance View:** Token verification screen with password creation, clear expiration warnings, and invalid/revoked token feedback
 - [x] **Church Membership Management UI:** Staff roster table with role badges (Church Admin vs Lector), invite staff modal, and instant deactivation modal with confirmation prompt
-- [x] **Central Admin & Church Admin Layout Shells:** Persistent navigation shells, breadcrumbs, user dropdown, tenant indicator, and flash message toasts
+- [x] **Central Admin & Church Admin Layout Shells:** Persistent navigation shells, breadcrumbs, user dropdown, tenant indicator, and unified global flash notification system (`FlashMessage.jsx`) with 5-second auto-dismiss timeout, duplicate display prevention, and manual dismiss support across `AuthenticatedLayout` and `GuestLayout`
 
 #### 3. Wiring & Integration
 - [x] Wire staff invitation forms to backend actions with optimistic feedback and validation error display
@@ -129,11 +129,11 @@ flowchart TD
 **Spec section:** Simplified Spec §9 Phase 2 (Blueprint §11 Phase 2)  
 
 #### 1. Backend Track
-- [x] Migrations: `church_branding`, `church_categories`, `mass_series`, `mass_schedules`, `mass_assignments`
+- [x] Migrations: `church_branding`, `church_categories`, `mass_series`, `mass_schedules`, `mass_assignments` + slip customization extension (`template_type`, `price`, `form_config`)
 - [x] Backed PHP enums: `BookingStatus`, `MassStatus`, `MassAssignmentStatus`
 - [x] Policies: `MassSchedulePolicy`, `ChurchPolicy` extensions
 - [x] Church verification / publication / suspension workflow
-- [x] Categories management (church-defined, deactivate not delete)
+- [x] Categories management (church-defined, deactivate not delete, and customizable slip template/pricing action `ManageCategoryAction::update`)
 - [x] Mass schedules: recurring series/occurrences, booking windows, cutoffs
 - [x] Lector assignments with active/removed tracking
 - [x] Conflict detection (shared resources/staff, allowing unrelated chapel overlaps)
@@ -142,7 +142,7 @@ flowchart TD
 - [x] **Public Church Directory:** Search bar, diocese/city filters, parish cards with cover photo/logo, published status badges, and church profile page
 - [x] **Public Mass Schedule View:** Calendar and list views of upcoming Masses, language tags, chapel locations, booking status badges, and live cutoff countdown indicators
 - [x] **Church Admin Schedule Builder:** Recurring schedule generator, single-occurrence exception editor, cutoff and booking window selectors, and resource conflict alerts
-- [x] **Intention Categories Manager:** Custom category creation table, color tags, activation toggle, and deactivation warning modal
+- [x] **Intention Categories Manager:** Custom category creation table, color tags, activation toggle, and "Edit & Customize" slip modal configuring slip templates (`thanksgiving`, `souls`, `special`, `standard`), max soul count limits (7 vs 10 souls), celebration checkboxes, and custom offering rates (₱150, etc.) without hardcoding
 - [x] **Lector Assignment Matrix:** Visual schedule board assigning verified lectors to Masses with conflict detection warnings
 
 #### 3. Wiring & Integration
@@ -188,15 +188,20 @@ flowchart TD
 - [x] Domain action: `VerifyPaymentAction` — Central Admin only (spec §8.3)
 - [x] Domain action: `RejectPaymentAction` — Central Admin only with reason and user notification
 - [x] Domain actions for customer requests: `CreateCancellationRequestAction`, `CreateCorrectionRequestAction`, `CreateReschedulingRequestAction`
-- [x] Pricing configuration guardrails and order snapshots (`PricingResolutionService`)
+- [x] Pricing configuration guardrails, order snapshots, and category-level slip pricing (`PricingResolutionService` with decimal-safe `bcmath` arithmetic)
 - [x] Protected evidence uploads (private disk, randomized keys, authorized controller streaming)
 - [x] Guest access: secure tracking, email verification challenge, credential revocation (`GuestAccessService`)
 
 #### 2. UI/UX Track (Inertia + React 19)
 - [x] **Parishioner Intention Booking Wizard:**
   - Step 1: Mass selection with date and cutoff indicators
-  - Step 2: Multi-intention builder (category selection, intention wording, donor name, duplicate warning banner)
-  - Step 3: Transparent pricing breakdown and order summary
+  - Step 2: Multi-slip builder customized to mirror physical paper slips:
+    - **Thanksgiving Mass Slip:** 8 celebration checkboxes (*Birthday, Wedding, Exam, Job/Promotion, Health, Harvest*) with inline celebrant/exam details input
+    - **Mass for the Souls Slip:** Numbered lines 1 to N matching parish limits (e.g., 7 or 10 souls) with "+ Add Soul Line"
+    - **Special Mass Intention Slip:** Ruled petition textarea and canonical parish Arancel notice
+    - Standard Intention Form fallback
+    - Client-side duplicate intention notice
+  - Step 3: Transparent itemized pricing breakdown per slip (e.g. 1 slip = ₱150, 2 slips = ₱300) and order summary
   - Step 4: GCash payment screen (church GCash QR code, account number, drag-and-drop screenshot uploader with client image preview and file validation)
 - [x] **Guest Order Tracking Portal:** Mobile-first order tracking page displaying live order timeline (`awaiting_payment` → `payment_under_review` → `confirmed` → `completed`), email challenge entry modal, and receipt download
 - [x] **Central Admin Payment Review Queue:** Split-screen review workbench:
@@ -241,8 +246,11 @@ flowchart TD
 - [x] 28. Every sensitive payment/order decision creates an audit record
 - [x] 29. Concurrent Central Admin verification → one consistent decision
 - [x] 30. Payment after cutoff held for review rather than silently discarded
+- [x] 31. Church Admin can customize souls category max limits (7 vs 10 souls) and custom slip offering rates (`CustomSlipsAndPricingTest`)
+- [x] 32. Church Admin can customize Thanksgiving celebration occasion options (`CustomSlipsAndPricingTest`)
+- [x] 33. Multi-slip order creation calculates accurate configured pricing per slip and preserves exact ecclesiastical text (`CustomSlipsAndPricingTest`)
 
-**Release gate:** All payment exception tests pass; payment evidence remains strictly private; verification queue and parishioner booking wizard tested across mobile and desktop.
+**Release gate:** All payment exception tests pass; payment evidence remains strictly private; verification queue and parishioner booking wizard tested across mobile and desktop (33/33 passing).
 
 ---
 
