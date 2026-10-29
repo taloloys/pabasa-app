@@ -9,4 +9,60 @@
 @theme {
     --font-sans: 'Figtree', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-serif: 'Playfair Display', Georgia, Cambria, 'Times New Roman', serif;
+    --font-cinzel: 'Cinzel', 'Playfair Display', Georgia, serif;
+
+    /* Reverent Church Aesthetic Tokens */
+    --color-gold-50: #fefdf9;
+    --color-gold-100: #fbf5e6;
+    --color-gold-200: #f5e7c4;
+    --color-gold-300: #edd398;
+    --color-gold-400: #e3bd6a;
+    --color-gold-500: #d4a03c;
+    --color-gold-600: #b8802d;
+    --color-gold-700: #936124;
+    --color-gold-800: #784e23;
+    --color-gold-900: #644120;
+    --color-gold-950: #3a220d;
+
+    --color-liturgical-50: #faf7fd;
+    --color-liturgical-100: #f3ebfc;
+    --color-liturgical-200: #e9daf9;
+    --color-liturgical-300: #d6bdf3;
+    --color-liturgical-400: #b891e8;
+    --color-liturgical-500: #9765d8;
+    --color-liturgical-600: #7e46c4;
+    --color-liturgical-700: #6934a5;
+    --color-liturgical-800: #572c87;
+    --color-liturgical-900: #48266e;
+    --color-liturgical-950: #291143;
+
+    --color-ivory-50: #fdfcf9;
+    --color-ivory-100: #f9f6ef;
+    --color-ivory-200: #f3ece0;
+    --color-ivory-300: #e9ddca;
+    --color-ivory-400: #d9c6ab;
+    --color-ivory-500: #c6ac8c;
+    --color-ivory-600: #b19373;
+    --color-ivory-700: #93785d;
+    --color-ivory-800: #78624d;
+    --color-ivory-900: #625140;
+    --color-ivory-950: #352b21;
+}
+
+/* Ecclesiastical Texture & Architectural Utilities */
+.cathedral-gradient {
+    background: radial-gradient(120% 120% at 50% 10%, #faf5ec 0%, #f6efe2 50%, #eee4d1 100%);
+}
+
+.cathedral-dark-gradient {
+    background: radial-gradient(120% 120% at 50% 0%, #2f1747 0%, #1e0d30 50%, #120620 100%);
+}
+
+.gold-halo {
+    box-shadow: 0 0 50px -10px rgba(212, 160, 60, 0.25);
+}
+
+.altar-border {
+    border-color: rgba(212, 160, 60, 0.35);
 }

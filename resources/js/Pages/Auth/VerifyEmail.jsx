@@ -12,36 +12,35 @@ export default function VerifyEmail({ status }) {
     };
 
     return (
-        <GuestLayout>
+        <GuestLayout
+            title="Verify Your Email"
+            subtitle="Secure intention tracking and staff operations require a verified email address"
+        >
             <Head title="Email Verification" />
 
-            <div className="mb-4 text-sm text-gray-600">
-                Thanks for signing up! Before getting started, could you verify
-                your email address by clicking on the link we just emailed to
-                you? If you didn't receive the email, we will gladly send you
-                another.
+            <div className="mb-4 text-xs text-slate-600 leading-relaxed">
+                Thank you for registering with Pabasa. Before getting started, please verify your email address by clicking the link we just sent to your inbox.
             </div>
 
             {status === 'verification-link-sent' && (
-                <div className="mb-4 text-sm font-medium text-green-600">
-                    A new verification link has been sent to the email address
-                    you provided during registration.
+                <div className="mb-4 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+                    A new verification link has been sent to the email address you provided during registration.
                 </div>
             )}
 
-            <form onSubmit={submit}>
-                <div className="mt-4 flex items-center justify-between">
-                    <PrimaryButton disabled={processing}>
-                        Resend Verification Email
+            <form onSubmit={submit} className="space-y-4">
+                <div className="flex items-center justify-between pt-2">
+                    <PrimaryButton className="text-xs" disabled={processing}>
+                        {processing ? 'Sending...' : 'Resend Verification Link'}
                     </PrimaryButton>
 
                     <Link
                         href={route('logout')}
                         method="post"
                         as="button"
-                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="text-xs font-medium text-slate-500 hover:text-slate-800 underline"
                     >
-                        Log Out
+                        Sign Out
                     </Link>
                 </div>
             </form>

@@ -29,10 +29,22 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
+                'is_central_admin' => $user ? (bool) $user->is_central_admin : false,
+                'memberships' => $user
+                    ? $user->churchMemberships()->with('church')->active()->get()
+                    : [],
+            ],
+            'locale' => app()->getLocale(),
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+                'raw_token' => fn () => $request->session()->get('raw_token'),
             ],
         ];
     }
