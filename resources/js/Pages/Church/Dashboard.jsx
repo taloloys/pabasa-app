@@ -87,6 +87,115 @@ export default function ChurchDashboard({ church, stats, recent_audit_logs = [] 
                     </div>
                 </div>
 
+                {/* Pastoral Ministry Quick Actions */}
+                <div className="space-y-4">
+                    <div className="border-b border-gold-200/80 pb-3">
+                        <h3
+                            className="text-lg font-bold text-liturgical-950 font-serif"
+                            style={{ fontFamily: 'var(--font-cinzel, Georgia, serif)' }}
+                        >
+                            Pastoral Ministry Functions
+                        </h3>
+                        <p className="text-xs text-stone-600">
+                            Core administrative tools to schedule Masses, assign ambo lectors, manage prayer categories, and configure parish details.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                        {/* 1. Mass Schedules */}
+                        <Link
+                            href={route('church.masses.index', { church: church.id })}
+                            className="group relative overflow-hidden rounded-2xl border border-gold-300/80 bg-white p-6 shadow-xs hover:border-gold-500 hover:shadow-md transition flex flex-col justify-between"
+                        >
+                            <div className="absolute top-0 inset-x-0 h-1 bg-liturgical-800" />
+                            <div>
+                                <div className="w-10 h-10 rounded-xl bg-ivory-100 border border-gold-200 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
+                                    📅
+                                </div>
+                                <h4 className="font-cinzel text-sm font-bold text-liturgical-950 group-hover:text-gold-700 transition">
+                                    Mass Schedule Builder
+                                </h4>
+                                <p className="mt-1 text-xs text-stone-600 leading-relaxed">
+                                    Create single Masses or generate recurring weekly series. Configure booking cutoffs and altar spaces.
+                                </p>
+                            </div>
+                            <div className="mt-4 pt-3 border-t border-gold-100 text-xs font-bold text-liturgical-900 flex items-center justify-between">
+                                <span>Open Schedule Builder</span>
+                                <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                            </div>
+                        </Link>
+
+                        {/* 2. Lector Assignment Matrix */}
+                        <Link
+                            href={route('church.lectors.matrix', { church: church.id })}
+                            className="group relative overflow-hidden rounded-2xl border border-gold-300/80 bg-white p-6 shadow-xs hover:border-sky-500 hover:shadow-md transition flex flex-col justify-between"
+                        >
+                            <div className="absolute top-0 inset-x-0 h-1 bg-sky-600" />
+                            <div>
+                                <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
+                                    📖
+                                </div>
+                                <h4 className="font-cinzel text-sm font-bold text-liturgical-950 group-hover:text-sky-700 transition">
+                                    Lector Matrix Board
+                                </h4>
+                                <p className="mt-1 text-xs text-stone-600 leading-relaxed">
+                                    Assign commissioned readers to upcoming Masses, prevent double-booking, and track ambo assignments.
+                                </p>
+                            </div>
+                            <div className="mt-4 pt-3 border-t border-sky-100 text-xs font-bold text-sky-900 flex items-center justify-between">
+                                <span>Assign Lectors</span>
+                                <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                            </div>
+                        </Link>
+
+                        {/* 3. Intention Categories */}
+                        <Link
+                            href={route('church.categories.index', { church: church.id })}
+                            className="group relative overflow-hidden rounded-2xl border border-gold-300/80 bg-white p-6 shadow-xs hover:border-amber-500 hover:shadow-md transition flex flex-col justify-between"
+                        >
+                            <div className="absolute top-0 inset-x-0 h-1 bg-amber-600" />
+                            <div>
+                                <div className="w-10 h-10 rounded-xl bg-amber-50 border border-gold-200 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
+                                    🏷️
+                                </div>
+                                <h4 className="font-cinzel text-sm font-bold text-liturgical-950 group-hover:text-amber-800 transition">
+                                    Intention Categories
+                                </h4>
+                                <p className="mt-1 text-xs text-stone-600 leading-relaxed">
+                                    Manage Thanksgiving, Souls, Petitions, and Healing categories. Toggle active status for parish offerings.
+                                </p>
+                            </div>
+                            <div className="mt-4 pt-3 border-t border-gold-100 text-xs font-bold text-amber-900 flex items-center justify-between">
+                                <span>Configure Categories</span>
+                                <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                            </div>
+                        </Link>
+
+                        {/* 4. Parish Profile & Details */}
+                        <Link
+                            href={route('church.branding.edit', { church: church.id })}
+                            className="group relative overflow-hidden rounded-2xl border border-gold-300/80 bg-white p-6 shadow-xs hover:border-gold-500 hover:shadow-md transition flex flex-col justify-between"
+                        >
+                            <div className="absolute top-0 inset-x-0 h-1 bg-gold-600" />
+                            <div>
+                                <div className="w-10 h-10 rounded-xl bg-ivory-100 border border-gold-200 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
+                                    ⛪
+                                </div>
+                                <h4 className="font-cinzel text-sm font-bold text-liturgical-950 group-hover:text-gold-700 transition">
+                                    Parish Profile & Details
+                                </h4>
+                                <p className="mt-1 text-xs text-stone-600 leading-relaxed">
+                                    Configure public parish motto, address, contact telephone, email, and theme styling for faithful visitors.
+                                </p>
+                            </div>
+                            <div className="mt-4 pt-3 border-t border-gold-100 text-xs font-bold text-liturgical-900 flex items-center justify-between">
+                                <span>Edit Parish Profile</span>
+                                <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                            </div>
+                        </Link>
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     {/* Church Profile Card */}
                     <div className="rounded-2xl border border-gold-300/70 bg-white p-6 shadow-xs space-y-4 ring-1 ring-gold-400/20">

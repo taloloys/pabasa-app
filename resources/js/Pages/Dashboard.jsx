@@ -36,6 +36,33 @@ export default function Dashboard() {
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
                 {/* Quick Access Grid */}
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {/* Browse Parishes & Book Intentions Tile */}
+                    <div className="relative overflow-hidden rounded-2xl border border-gold-300/70 bg-white p-7 shadow-xs hover:border-gold-400 hover:shadow-md transition flex flex-col justify-between ring-1 ring-gold-400/20 group">
+                        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-liturgical-800 via-gold-500 to-liturgical-800" />
+                        <div>
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-ivory-100 text-gold-700 border border-gold-200 text-2xl font-bold mb-4 shadow-2xs group-hover:scale-105 transition-transform duration-200">
+                                ⛪
+                            </div>
+                            <h3
+                                className="text-base font-bold text-liturgical-950 font-serif"
+                                style={{ fontFamily: 'var(--font-cinzel, Georgia, serif)' }}
+                            >
+                                Find Parishes & Mass Schedules
+                            </h3>
+                            <p className="mt-1 text-xs text-stone-600 leading-relaxed font-sans">
+                                Explore published Catholic parishes, view upcoming Mass times, and submit prayer intentions for Holy Mass.
+                            </p>
+                        </div>
+                        <div className="mt-6 pt-4 border-t border-gold-100">
+                            <Link
+                                href={route('churches.index')}
+                                className="inline-flex items-center text-xs font-bold text-liturgical-800 hover:text-liturgical-950"
+                            >
+                                Browse Parishes & Intentions &rarr;
+                            </Link>
+                        </div>
+                    </div>
+
                     {/* Order Tracking Tile */}
                     <div className="relative overflow-hidden rounded-2xl border border-gold-300/70 bg-white p-7 shadow-xs hover:border-gold-400 hover:shadow-md transition flex flex-col justify-between ring-1 ring-gold-400/20 group">
                         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-400" />
@@ -83,6 +110,21 @@ export default function Dashboard() {
                                 <p className="mt-1 text-xs text-stone-600 leading-relaxed font-sans">
                                     Diocese-wide parish approvals, canonical verification rules, and system-wide append-only audit trail.
                                 </p>
+
+                                <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]">
+                                    <Link
+                                        href={route('admin.payments.index')}
+                                        className="px-2 py-0.5 rounded bg-liturgical-100 text-liturgical-900 font-semibold hover:bg-liturgical-200 transition"
+                                    >
+                                        Review Payments
+                                    </Link>
+                                    <Link
+                                        href={route('admin.users.index')}
+                                        className="px-2 py-0.5 rounded bg-liturgical-100 text-liturgical-900 font-semibold hover:bg-liturgical-200 transition"
+                                    >
+                                        Staff & Users
+                                    </Link>
+                                </div>
                             </div>
                             <div className="mt-6 pt-4 border-t border-liturgical-200/50">
                                 <Link
@@ -120,6 +162,40 @@ export default function Dashboard() {
                                         ? 'Parish staff administration, Mass schedules, intention category management, and liturgical lectors.'
                                         : 'Digital ambo lectionary access and assigned Mass intention proclamation rosters.'}
                                 </p>
+
+                                {membership.role === 'church_admin' && (
+                                    <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]">
+                                        <Link
+                                            href={route('church.masses.index', { church: membership.church_id })}
+                                            className="px-2 py-0.5 rounded bg-gold-100 text-gold-950 font-semibold hover:bg-gold-200 transition"
+                                        >
+                                            📅 Mass Schedules
+                                        </Link>
+                                        <Link
+                                            href={route('church.lectors.matrix', { church: membership.church_id })}
+                                            className="px-2 py-0.5 rounded bg-sky-100 text-sky-950 font-semibold hover:bg-sky-200 transition"
+                                        >
+                                            📖 Lectors Matrix
+                                        </Link>
+                                        <Link
+                                            href={route('church.categories.index', { church: membership.church_id })}
+                                            className="px-2 py-0.5 rounded bg-amber-100 text-amber-950 font-semibold hover:bg-amber-200 transition"
+                                        >
+                                            🏷️ Categories
+                                        </Link>
+                                    </div>
+                                )}
+
+                                {membership.role === 'lector' && (
+                                    <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]">
+                                        <Link
+                                            href={route('lector.masses.index', { church: membership.church_id })}
+                                            className="px-2 py-0.5 rounded bg-sky-100 text-sky-950 font-semibold hover:bg-sky-200 transition"
+                                        >
+                                            📅 My Assigned Masses
+                                        </Link>
+                                    </div>
+                                )}
                             </div>
                             <div className="mt-6 pt-4 border-t border-gold-100">
                                 <Link

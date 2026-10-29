@@ -9,7 +9,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
-    const { auth } = usePage().props;
+    const { auth, church } = usePage().props;
     const user = auth.user;
     const isCentralAdmin = auth.is_central_admin;
     const memberships = auth.memberships || [];
@@ -29,6 +29,12 @@ export default function AuthenticatedLayout({ header, children }) {
         primaryRole = 'Lector';
         roleBadge = <StatusBadge role="lector" />;
     }
+
+    const isChurchRoute = route().current('church.*');
+    const isLectorRoute = route().current('lector.*');
+    const adminMembership = memberships.find((m) => m.role === 'church_admin');
+    const lectorMembership = memberships.find((m) => m.role === 'lector');
+    const currentChurchId = church?.id || adminMembership?.church_id || lectorMembership?.church_id;
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-[#FDFBF7] via-[#FAF6EE] to-[#F5ECE0] text-stone-800 antialiased selection:bg-liturgical-800 selection:text-gold-200">
@@ -299,6 +305,112 @@ export default function AuthenticatedLayout({ header, children }) {
                     </div>
                 </div>
             </nav>
+
+            {/* Parish Ministry Sub-Navigation (When on church.* or for church admins) */}
+            {isChurchRoute && currentChurchId && (
+                <div className="border-b border-gold-200/80 bg-white/90 backdrop-blur-xs py-2 shadow-2xs">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center space-x-1 sm:space-x-3 overflow-x-auto text-xs">
+                            <Link
+                                href={route('church.dashboard', { church: currentChurchId })}
+                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${
+                                    route().current('church.dashboard')
+                                        ? 'bg-liturgical-900 text-gold-200 font-bold shadow-2xs'
+                                        : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
+                                }`}
+                            >
+                                <span>📊 Overview</span>
+                            </Link>
+
+                            <Link
+                                href={route('church.masses.index', { church: currentChurchId })}
+                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${
+                                    route().current('church.masses.*')
+                                        ? 'bg-liturgical-900 text-gold-200 font-bold shadow-2xs'
+                                        : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
+                                }`}
+                            >
+                                <span>📅 Mass Schedules</span>
+                            </Link>
+
+                            <Link
+                                href={route('church.lectors.matrix', { church: currentChurchId })}
+                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${
+                                    route().current('church.lectors.*')
+                                        ? 'bg-liturgical-900 text-gold-200 font-bold shadow-2xs'
+                                        : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
+                                }`}
+                            >
+                                <span>📖 Lector Roster</span>
+                            </Link>
+
+                            <Link
+                                href={route('church.categories.index', { church: currentChurchId })}
+                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${
+                                    route().current('church.categories.*')
+                                        ? 'bg-liturgical-900 text-gold-200 font-bold shadow-2xs'
+                                        : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
+                                }`}
+                            >
+                                <span>🏷️ Categories</span>
+                            </Link>
+
+                            <Link
+                                href={route('church.memberships.index', { church: currentChurchId })}
+                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${
+                                    route().current('church.memberships.*')
+                                        ? 'bg-liturgical-900 text-gold-200 font-bold shadow-2xs'
+                                        : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
+                                }`}
+                            >
+                                <span>👥 Staff</span>
+                            </Link>
+
+                            <Link
+                                href={route('church.branding.edit', { church: currentChurchId })}
+                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${
+                                    route().current('church.branding.*')
+                                        ? 'bg-liturgical-900 text-gold-200 font-bold shadow-2xs'
+                                        : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
+                                }`}
+                            >
+                                <span>⛪ Profile & Branding</span>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Lector Ministry Sub-Navigation */}
+            {isLectorRoute && currentChurchId && (
+                <div className="border-b border-sky-200/80 bg-white/90 backdrop-blur-xs py-2 shadow-2xs">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center space-x-1 sm:space-x-3 overflow-x-auto text-xs">
+                            <Link
+                                href={route('lector.dashboard', { church: currentChurchId })}
+                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${
+                                    route().current('lector.dashboard')
+                                        ? 'bg-sky-900 text-sky-100 font-bold shadow-2xs'
+                                        : 'text-stone-600 hover:text-stone-900 hover:bg-sky-50'
+                                }`}
+                            >
+                                <span>📖 Lector Console</span>
+                            </Link>
+
+                            <Link
+                                href={route('lector.masses.index', { church: currentChurchId })}
+                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${
+                                    route().current('lector.masses.*')
+                                        ? 'bg-sky-900 text-sky-100 font-bold shadow-2xs'
+                                        : 'text-stone-600 hover:text-stone-900 hover:bg-sky-50'
+                                }`}
+                            >
+                                <span>📅 Assigned Masses</span>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Flash Messages */}
             <FlashMessage />
