@@ -182,24 +182,35 @@ class VerifyPaymentAction
         );
 
         $intentions = $order->intentions()->where('status', IntentionStatus::Confirmed->value)->get();
+        if ($intentions->isEmpty()) {
+            return;
+        }
+
+        // Fetch existing entries in one single query to eliminate per-intention checks
+        $existingIntentionIds = ReadingListEntry::where('reading_list_id', $readingList->id)
+            ->whereIn('intention_id', $intentions->pluck('id'))
+            ->pluck('intention_id')
+            ->flip()
+            ->all();
+
+        // Calculate max position once using the (reading_list_id, position) composite index
+        $maxPos = ReadingListEntry::where('reading_list_id', $readingList->id)->max('position') ?? 0;
 
         foreach ($intentions as $intention) {
-            $existing = ReadingListEntry::where('reading_list_id', $readingList->id)
-                ->where('intention_id', $intention->id)
-                ->first();
-
-            if (! $existing) {
-                $maxPos = ReadingListEntry::where('reading_list_id', $readingList->id)->max('position') ?? 0;
-
-                ReadingListEntry::create([
-                    'reading_list_id' => $readingList->id,
-                    'church_id' => $order->church_id,
-                    'mass_schedule_id' => $order->mass_schedule_id,
-                    'intention_id' => $intention->id,
-                    'position' => $maxPos + 1,
-                    'status' => 'pending',
-                ]);
+            if (isset($existingIntentionIds[$intention->id])) {
+                continue;
             }
+
+            $maxPos++;
+
+            ReadingListEntry::create([
+                'reading_list_id' => $readingList->id,
+                'church_id' => $order->church_id,
+                'mass_schedule_id' => $order->mass_schedule_id,
+                'intention_id' => $intention->id,
+                'position' => $maxPos,
+                'status' => 'pending',
+            ]);
         }
     }
 }

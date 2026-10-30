@@ -77,6 +77,12 @@ class CreateOrderAction
         $existingIntentionHashes = [];
         $existingNames = [];
 
+        // Pre-fetch all distinct categories in a single query to eliminate N+1 queries
+        $categoryIds = collect($intentionsData)->pluck('category_id')->filter()->unique()->all();
+        $categoriesById = ! empty($categoryIds)
+            ? ChurchCategory::whereIn('id', $categoryIds)->get()->keyBy('id')
+            : collect();
+
         foreach ($intentionsData as $index => $item) {
             // Rule 3: Reject intentions specifying a different mass or church
             if (isset($item['mass_schedule_id']) && (int) $item['mass_schedule_id'] !== $massScheduleId) {
@@ -93,7 +99,7 @@ class CreateOrderAction
 
             // Rule 4: Inactive category is rejected for new submissions
             $categoryId = (int) ($item['category_id'] ?? 0);
-            $category = ChurchCategory::find($categoryId);
+            $category = $categoriesById->get($categoryId);
 
             if (! $category || ! $category->is_active || ($category->type !== CategoryType::Intention)) {
                 throw ValidationException::withMessages([
@@ -121,7 +127,7 @@ class CreateOrderAction
         }
 
         // 6. Resolve approved pricing configuration (Rule 7: No invented pricing)
-        $pricing = $this->pricingResolver->resolve($church, $intentionsData);
+        $pricing = $this->pricingResolver->resolve($church, $intentionsData, $categoriesById);
 
         $submitterType = $actor ? 'registered_user' : 'guest';
         $submitterName = $actor ? $actor->name : trim($data['submitter_name'] ?? '');
@@ -143,6 +149,7 @@ class CreateOrderAction
             $submitterEmail,
             $data,
             $intentionsData,
+            $categoriesById,
             $pricing,
             $warnings
         ) {
@@ -172,7 +179,7 @@ class CreateOrderAction
 
             // Create intention records, preserving exact submitted Unicode characters
             foreach ($intentionsData as $idx => $item) {
-                $category = ChurchCategory::find($item['category_id']);
+                $category = $categoriesById->get($item['category_id']);
 
                 Intention::create([
                     'order_id' => $order->id,

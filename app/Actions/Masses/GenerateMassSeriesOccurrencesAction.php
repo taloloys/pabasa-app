@@ -113,6 +113,20 @@ class GenerateMassSeriesOccurrencesAction
 
             [$hour, $minute] = explode(':', $timeStr);
 
+            // Pre-fetch all overlapping resource schedules across the entire series range in 1 query
+            $existingSchedules = ! empty($data['resource_key'])
+                ? MassSchedule::where('church_id', $church->id)
+                    ->where('resource_key', $data['resource_key'])
+                    ->where('status', '!=', MassStatus::Cancelled->value)
+                    ->where('starts_at', '<', $endsOn->copy()->addDay())
+                    ->where(function ($q) use ($startsOn) {
+                        $q->whereNull('ends_at')
+                            ->where('starts_at', '>=', $startsOn->copy()->subHours(2))
+                            ->orWhere('ends_at', '>', $startsOn);
+                    })
+                    ->get(['id', 'starts_at', 'ends_at'])
+                : collect();
+
             while ($currentDay->lte($endsOn)) {
                 // Carbon dayOfWeek: 0 = Sunday, 1 = Monday, ... 6 = Saturday
                 if (in_array($currentDay->dayOfWeek, $daysOfWeek, true)) {
@@ -122,23 +136,22 @@ class GenerateMassSeriesOccurrencesAction
                     $bookingOpensAt = $occurrenceStart->copy()->subDays($bookingOpensDaysBefore);
                     $bookingCutoffAt = $occurrenceStart->copy()->subHours($bookingCutoffHoursBefore);
 
-                    // Skip if resource conflict exists
+                    // Skip if resource conflict exists using in-memory detection
                     if (! empty($data['resource_key'])) {
-                        $conflict = $this->conflictDetector->checkResourceConflict(
-                            church: $church,
-                            startsAt: $occurrenceStart,
-                            endsAt: $occurrenceEnd,
-                            resourceKey: $data['resource_key'],
-                        );
+                        $hasConflict = $existingSchedules->contains(function ($s) use ($occurrenceStart, $occurrenceEnd) {
+                            $sEnd = $s->ends_at ?? $s->starts_at->copy()->addHour();
 
-                        if ($conflict['has_conflict']) {
+                            return $s->starts_at->lt($occurrenceEnd) && $sEnd->gt($occurrenceStart);
+                        });
+
+                        if ($hasConflict) {
                             $currentDay->addDay();
 
                             continue;
                         }
                     }
 
-                    MassSchedule::create([
+                    $newSchedule = MassSchedule::create([
                         'church_id' => $church->id,
                         'mass_series_id' => $series->id,
                         'category_id' => $data['category_id'] ?? null,
@@ -157,6 +170,10 @@ class GenerateMassSeriesOccurrencesAction
                         'created_by' => $actor->id,
                         'updated_by' => $actor->id,
                     ]);
+
+                    if (! empty($data['resource_key'])) {
+                        $existingSchedules->push($newSchedule);
+                    }
 
                     $occurrencesCount++;
                 }

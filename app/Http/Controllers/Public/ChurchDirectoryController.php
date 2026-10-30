@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Church;
 use App\Models\MassSchedule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -48,19 +49,23 @@ class ChurchDirectoryController extends Controller
 
         $churches = $query->orderBy('name')->paginate(12)->withQueryString();
 
-        $availableCities = Church::where('status', ChurchStatus::Published->value)
-            ->whereNotNull('city')
-            ->distinct()
-            ->pluck('city')
-            ->sort()
-            ->values();
+        $availableCities = Cache::remember('directory:published_cities', 300, function () {
+            return Church::where('status', ChurchStatus::Published->value)
+                ->whereNotNull('city')
+                ->distinct()
+                ->pluck('city')
+                ->sort()
+                ->values();
+        });
 
-        $availableProvinces = Church::where('status', ChurchStatus::Published->value)
-            ->whereNotNull('province')
-            ->distinct()
-            ->pluck('province')
-            ->sort()
-            ->values();
+        $availableProvinces = Cache::remember('directory:published_provinces', 300, function () {
+            return Church::where('status', ChurchStatus::Published->value)
+                ->whereNotNull('province')
+                ->distinct()
+                ->pluck('province')
+                ->sort()
+                ->values();
+        });
 
         return Inertia::render('Public/Churches/Index', [
             'churches' => $churches,

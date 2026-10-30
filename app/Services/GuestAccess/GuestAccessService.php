@@ -56,7 +56,7 @@ class GuestAccessService
 
         $tokenHash = hash('sha256', $rawToken);
 
-        $access = GuestOrderAccess::with(['order.church', 'order.massSchedule', 'order.intentions'])
+        $access = GuestOrderAccess::with(['order.church', 'order.massSchedule', 'order.intentions', 'order.latestPayment'])
             ->where('token_hash', $tokenHash)
             ->first();
 

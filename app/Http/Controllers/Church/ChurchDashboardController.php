@@ -15,15 +15,21 @@ class ChurchDashboardController extends Controller
 {
     public function index(Request $request, Church $church): Response
     {
-        $adminsCount = $church->memberships()
-            ->where('role', MembershipRole::ChurchAdmin->value)
+        // Single-roundtrip conditional aggregation for staff roles
+        $roleCounts = $church->memberships()
             ->where('status', MembershipStatus::Active->value)
-            ->count();
+            ->whereIn('role', [MembershipRole::ChurchAdmin->value, MembershipRole::Lector->value])
+            ->selectRaw('
+                COALESCE(SUM(role = ?), 0) as admins,
+                COALESCE(SUM(role = ?), 0) as lectors
+            ', [
+                MembershipRole::ChurchAdmin->value,
+                MembershipRole::Lector->value,
+            ])
+            ->first();
 
-        $lectorsCount = $church->memberships()
-            ->where('role', MembershipRole::Lector->value)
-            ->where('status', MembershipStatus::Active->value)
-            ->count();
+        $adminsCount = (int) ($roleCounts?->admins ?? 0);
+        $lectorsCount = (int) ($roleCounts?->lectors ?? 0);
 
         $pendingInvitationsCount = $church->invitations()
             ->whereNull('accepted_at')
