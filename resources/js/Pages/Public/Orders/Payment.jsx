@@ -3,7 +3,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 function CopyButton({ text }) {
@@ -40,6 +40,7 @@ function CopyButton({ text }) {
 }
 
 export default function Payment({ order, church, mass, payment, guestToken }) {
+    const { auth } = usePage().props;
     const [previewUrl, setPreviewUrl] = useState(null);
     const [qrLightbox, setQrLightbox] = useState(false);
 
@@ -81,7 +82,11 @@ export default function Payment({ order, church, mass, payment, guestToken }) {
             <header className="border-b border-gold-300/60 bg-white/95 backdrop-blur-md sticky top-0 z-40 shadow-2xs">
                 <div className="h-1 bg-gradient-to-r from-liturgical-900 via-gold-500 to-liturgical-900" />
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                    <Link href="/" className="flex items-center space-x-2">
+                    <Link
+                        href={auth?.user ? route('dashboard') : '/'}
+                        className="flex items-center space-x-2"
+                        title={auth?.user ? 'Return to Sanctuary Dashboard' : 'Pabasa Home'}
+                    >
                         <ApplicationLogo className="h-10 w-10 shadow-xs" size="sm" />
                     </Link>
 

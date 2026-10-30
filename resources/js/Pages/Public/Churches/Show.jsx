@@ -37,7 +37,11 @@ export default function Show({ church, upcomingMasses, auth }) {
                 <div className="h-1 bg-gradient-to-r from-liturgical-900 via-gold-500 to-liturgical-900" />
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                        <Link href="/" className="flex items-center space-x-2 group">
+                        <Link
+                            href={auth?.user ? route('dashboard') : '/'}
+                            className="flex items-center space-x-2 group"
+                            title={auth?.user ? 'Return to Sanctuary Dashboard' : 'Pabasa Home'}
+                        >
                             <ApplicationLogo className="h-10 w-10 shadow-xs" size="sm" />
                         </Link>
                         <span className="text-stone-300">/</span>

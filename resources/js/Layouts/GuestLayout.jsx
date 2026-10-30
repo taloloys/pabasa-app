@@ -1,9 +1,10 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import LocaleSwitcher from '@/Components/LocaleSwitcher';
 import FlashMessage from '@/Components/FlashMessage';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 
 export default function GuestLayout({ children, title, subtitle, latinMotto = 'Ad Majorem Dei Gloriam' }) {
+    const { auth } = usePage().props;
     return (
         <div className="relative min-h-screen flex flex-col items-center justify-between bg-gradient-to-b from-[#FDFBF7] via-[#FAF6EE] to-[#F4ECE0] text-slate-800 antialiased selection:bg-liturgical-800 selection:text-gold-200">
             {/* Atmospheric Cathedral Glow & Sacred Light Beams */}
@@ -17,7 +18,11 @@ export default function GuestLayout({ children, title, subtitle, latinMotto = 'A
 
             {/* Top Sanctuary Navigation */}
             <header className="relative z-20 w-full max-w-6xl px-6 py-6 flex items-center justify-between">
-                <Link href="/" className="hover:opacity-90 transition group">
+                <Link
+                    href={auth?.user ? route('dashboard') : '/'}
+                    className="hover:opacity-90 transition group"
+                    title={auth?.user ? 'Return to Sanctuary Dashboard' : 'Pabasa Home'}
+                >
                     <ApplicationLogo className="h-11 w-11 shadow-md shadow-liturgical-950/10" />
                 </Link>
 

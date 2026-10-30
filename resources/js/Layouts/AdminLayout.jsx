@@ -9,7 +9,7 @@ import {
     ClipboardListIcon,
     ChurchIcon,
 } from '@/Components/Icons';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 
 function AdminNavLink({ href, active, children, icon: Icon }) {
     return (
@@ -38,6 +38,30 @@ export default function AdminLayout({ header, children }) {
     const user = auth.user;
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+    const isAtHome = () => {
+        if (route().current('admin.dashboard')) return true;
+        if (typeof window !== 'undefined') {
+            try {
+                const targetPath = new URL(route('admin.dashboard'), window.location.origin).pathname;
+                return window.location.pathname === targetPath;
+            } catch {
+                return false;
+            }
+        }
+        return false;
+    };
+
+    const handleBrandClick = (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+            return;
+        }
+
+        if (isAtHome()) {
+            e.preventDefault();
+            router.reload();
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-[#FDFBF7] via-[#FAF6EE] to-[#F5ECE0] text-stone-800 antialiased selection:bg-liturgical-800 selection:text-gold-200">
             {/* Topbar: Diocese Chancery Identity & Executive Controls */}
@@ -50,7 +74,12 @@ export default function AdminLayout({ header, children }) {
                     <div className="flex h-16 items-center justify-between border-b border-stone-100/80">
                         {/* Left: Chancery Logo & Subtitle */}
                         <div className="flex items-center space-x-3">
-                            <Link href={route('admin.dashboard')} className="flex items-center space-x-3 group">
+                            <Link
+                                href={route('admin.dashboard')}
+                                onClick={handleBrandClick}
+                                className="flex items-center space-x-3 group"
+                                title={isAtHome() ? 'Reload console' : 'Return to Chancery Dashboard'}
+                            >
                                 <ApplicationLogo className="h-10 w-10 shadow-xs" size="sm" showWordmark={false} />
                                 <div className="flex flex-col">
                                     <div className="flex items-center space-x-2">

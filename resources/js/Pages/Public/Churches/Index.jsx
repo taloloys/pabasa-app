@@ -37,7 +37,11 @@ export default function Index({ churches, filters, availableCities, availablePro
             <header className="border-b border-gold-300/60 bg-white/95 backdrop-blur-md sticky top-0 z-40 shadow-2xs">
                 <div className="h-1 bg-gradient-to-r from-liturgical-900 via-gold-500 to-liturgical-900" />
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                    <Link href="/" className="flex items-center space-x-3 group">
+                    <Link
+                        href={auth?.user ? route('dashboard') : '/'}
+                        className="flex items-center space-x-3 group"
+                        title={auth?.user ? 'Return to Sanctuary Dashboard' : 'Pabasa Home'}
+                    >
                         <ApplicationLogo className="h-10 w-10 shadow-xs" size="sm" />
                         <div>
                             <span className="font-cinzel text-lg font-bold tracking-wider text-liturgical-950 block">PABASA</span>

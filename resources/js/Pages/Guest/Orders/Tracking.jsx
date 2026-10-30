@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 
 export default function Tracking({
     token,
@@ -11,6 +11,7 @@ export default function Tracking({
     intentions = [],
     payment = null,
 }) {
+    const { auth } = usePage().props;
     const [activeModal, setActiveModal] = useState(null); // 'correction' | 'cancellation' | 'reschedule' | null
     const [selectedIntentionId, setSelectedIntentionId] = useState(intentions[0]?.id || null);
     const [copied, setCopied] = useState(false);
@@ -112,7 +113,11 @@ export default function Tracking({
             {/* Liturgical Top Navigation Header */}
             <header className="border-b border-amber-900/10 bg-white/90 backdrop-blur-sm sticky top-0 z-30">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2 group">
+                    <Link
+                        href={auth?.user ? route('dashboard') : '/'}
+                        className="flex items-center gap-2 group"
+                        title={auth?.user ? 'Return to Sanctuary Dashboard' : 'Pabasa Home'}
+                    >
                         <div className="w-8 h-8 rounded-full bg-amber-900/10 flex items-center justify-center text-amber-900 group-hover:bg-amber-900/20 transition-colors">
                             <svg className="w-4 h-4 text-amber-800" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M11 2v9H4v2h7v9h2v-9h7v-2h-7V2h-2z" />

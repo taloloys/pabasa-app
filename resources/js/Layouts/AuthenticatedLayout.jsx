@@ -14,7 +14,7 @@ import {
     ChurchIcon,
     ShieldIcon,
 } from '@/Components/Icons';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
@@ -45,6 +45,45 @@ export default function AuthenticatedLayout({ header, children }) {
     const lectorMembership = memberships.find((m) => m.role === 'lector');
     const currentChurchId = church?.id || adminMembership?.church_id || lectorMembership?.church_id;
 
+    // Context-aware home route determination:
+    // - Within parish management -> return to that parish's dashboard
+    // - Within lector ministry -> return to that lector portal dashboard
+    // - Elsewhere (Sanctuary, user tracking, profile) -> return to Sanctuary dashboard
+    let homeUrl = route('dashboard');
+    let isAtHome = route().current('dashboard');
+
+    if (isChurchRoute && currentChurchId) {
+        homeUrl = route('church.dashboard', { church: currentChurchId });
+        isAtHome = route().current('church.dashboard');
+    } else if (isLectorRoute && currentChurchId) {
+        homeUrl = route('lector.dashboard', { church: currentChurchId });
+        isAtHome = route().current('lector.dashboard');
+    }
+
+    const isCurrentUrlAtHome = () => {
+        if (isAtHome) return true;
+        if (typeof window !== 'undefined') {
+            try {
+                const targetPath = new URL(homeUrl, window.location.origin).pathname;
+                return window.location.pathname === targetPath;
+            } catch {
+                return false;
+            }
+        }
+        return false;
+    };
+
+    const handleBrandClick = (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+            return;
+        }
+
+        if (isCurrentUrlAtHome()) {
+            e.preventDefault();
+            router.reload();
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-[#FDFBF7] via-[#FAF6EE] to-[#F5ECE0] text-stone-800 antialiased selection:bg-liturgical-800 selection:text-gold-200">
             {/* Cathedral Sanctuary Navbar */}
@@ -56,7 +95,12 @@ export default function AuthenticatedLayout({ header, children }) {
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
-                                <Link href="/" className="flex items-center space-x-2 group">
+                                <Link
+                                    href={homeUrl}
+                                    onClick={handleBrandClick}
+                                    className="flex items-center space-x-2 group"
+                                    title={isCurrentUrlAtHome() ? 'Reload page' : 'Return to Home Dashboard'}
+                                >
                                     <ApplicationLogo className="h-10 w-10 shadow-xs" size="sm" />
                                 </Link>
                             </div>

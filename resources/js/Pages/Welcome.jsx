@@ -101,7 +101,11 @@ export default function Welcome({ auth, publishedChurches = [] }) {
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="flex h-20 justify-between items-center">
                             <div className="flex items-center space-x-6">
-                                <Link href="/" className="hover:opacity-95 transition">
+                                <Link
+                                    href={auth?.user ? route('dashboard') : '/'}
+                                    className="hover:opacity-95 transition"
+                                    title={auth?.user ? 'Return to Sanctuary Dashboard' : 'Pabasa Home'}
+                                >
                                     <ApplicationLogo className="h-12 w-12" size="lg" />
                                 </Link>
 

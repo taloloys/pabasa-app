@@ -1,9 +1,10 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import LocaleSwitcher from '@/Components/LocaleSwitcher';
 import { ShieldIcon, ChurchIcon, ExclamationTriangleIcon } from '@/Components/Icons';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 
 export default function ErrorPage({ status = 404, message = null }) {
+    const { auth } = usePage().props;
     const title = {
         503: '503: Service Unavailable',
         500: '500: Server Error',
@@ -21,7 +22,10 @@ export default function ErrorPage({ status = 404, message = null }) {
     return (
         <div className="flex min-h-screen flex-col items-center justify-between bg-[#FAF8F5] text-slate-800 antialiased p-6">
             <header className="w-full max-w-4xl flex items-center justify-between">
-                <Link href="/">
+                <Link
+                    href={auth?.user ? route('dashboard') : '/'}
+                    title={auth?.user ? 'Return to Sanctuary Dashboard' : 'Pabasa Home'}
+                >
                     <ApplicationLogo className="h-10 w-10" />
                 </Link>
                 <LocaleSwitcher />
