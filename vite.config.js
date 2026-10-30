@@ -19,7 +19,13 @@ export default defineConfig({
         },
         watch: {
             usePolling: true,
-            ignored: ['**/storage/framework/views/**'],
+            interval: 1000,
+            binaryInterval: 1000,
+            ignored: [
+                '**/vendor/**',
+                '**/node_modules/**',
+                '**/storage/framework/**',
+            ],
         },
     },
 });

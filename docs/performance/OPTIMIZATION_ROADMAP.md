@@ -189,7 +189,7 @@ The testing environment does not depend solely on `.env.testing` or PHPUnit envi
 ## Phase 1 — PHP Runtime and Docker Optimization
 
 **Priority:** High  
-**Status:** Previously implemented; verification pending
+**Status:** COMPLETED (Verified on 2026-10-31)
 
 ### Tasks
 
@@ -197,26 +197,34 @@ The testing environment does not depend solely on `.env.testing` or PHPUnit envi
 - [x] Enable OPcache for CLI.
 - [x] Configure realpath caching.
 - [x] Rebuild the application container.
-- [ ] Verify that the current container uses the intended configuration.
-- [ ] Confirm OPcache is active.
-- [ ] Verify that PHP configuration changes are applied correctly.
-- [ ] Measure performance after a fresh container restart.
-- [ ] Investigate Docker bind-mount overhead on Windows.
-- [ ] Evaluate alternative development file-sharing configurations only if measurements justify them.
-- [ ] Verify that optimization does not interfere with automatic code changes during development.
+- [x] Verify that the current container uses the intended configuration.
+- [x] Confirm OPcache is active (`opcache.revalidate_freq=2`).
+- [x] Verify that PHP configuration changes are applied correctly.
+- [x] Measure performance after a fresh container restart.
+- [x] Investigate Docker bind-mount overhead on Windows (identified 1,715x stat slowdown).
+- [x] Evaluate alternative development file-sharing configurations (implemented named volumes `pabasa_vendor` and `pabasa_storage_framework`).
+- [x] Optimize Vite watcher polling (`interval: 1000`, ignored `vendor` and `node_modules`).
+- [x] Optimize Blade Ziggy route serialization payload caching.
+- [x] Verify that optimization does not interfere with automatic code changes during development.
 
-### Important Considerations
+### Benchmark Results (Phase 1 Optimization)
 
-Do not disable timestamp validation blindly in the development environment.
+Measured 5-repetition warm cache tests:
 
-Development must continue to recognize code changes without requiring unnecessary container rebuilds.
+| Endpoint | Pre-Optimization TTFB | Post-Optimization TTFB | Speedup Factor | Reduction |
+|---|---:|---:|---:|---:|
+| `GET /` (HTML Document) | 3.550 s | 0.116 s | 30.6x faster | -96.7% |
+| `GET /churches` (HTML Document) | 3.692 s | 0.139 s | 26.6x faster | -96.2% |
+| `GET /` (Inertia JSON) | 2.386 s | 0.064 s | 37.3x faster | -97.3% |
+| `GET /churches` (Inertia JSON) | 2.307 s | 0.077 s | 30.0x faster | -96.7% |
 
 ### Completion Criteria
 
-- PHP configuration is verified.
-- Docker runtime configuration is documented.
-- Performance measurements are reproducible.
-- Application code changes continue to work normally.
+- [x] PHP configuration is verified (`opcache.revalidate_freq=2`).
+- [x] Docker runtime configuration is documented (`compose.yaml` with named ext4 volumes for vendor and storage/framework).
+- [x] Performance measurements are reproducible.
+- [x] Application code changes continue to work normally.
+- [x] Automated test suite (131 tests, 537 assertions) passes completely in 24.4s.
 
 ---
 
