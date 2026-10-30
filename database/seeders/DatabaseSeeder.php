@@ -158,7 +158,35 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Approved Pricing Configuration (PHP 150.00 base rate per intention/slip)
+        // Global Baseline Pricing Schedule (Diocese Archdiocesan Standard)
+        PricingConfiguration::updateOrCreate(
+            [
+                'scope' => 'global',
+                'church_id' => null,
+                'version' => 1,
+            ],
+            [
+                'name' => 'Archdiocesan Baseline Offering Schedule 2026',
+                'status' => PricingStatus::Approved,
+                'currency' => 'PHP',
+                'pricing_rules' => [
+                    'base_price_per_intention' => '100.00',
+                    'service_fee' => [
+                        'type' => 'none',
+                        'amount' => '0.00',
+                        'label' => 'Platform Convenience Fee',
+                        'is_active' => false,
+                    ],
+                ],
+                'effective_from' => now()->subDays(60),
+                'effective_until' => now()->addYears(2),
+                'approved_by' => $centralAdmin->id,
+                'approved_at' => now()->subDays(60),
+                'change_reason' => 'Archdiocesan baseline fee schedule approved for production.',
+            ]
+        );
+
+        // Approved Parish Pricing Configuration (PHP 150.00 base rate per intention/slip)
         $pricingConfig = PricingConfiguration::updateOrCreate(
             [
                 'church_id' => $church->id,

@@ -13,6 +13,10 @@ export default function BookingWizard({ church, mass, categories, pricingConfig,
     const basePricePerIntention = hasApprovedPricing ? parseFloat(pricingConfig.price_per_intention) : 0;
     const currency = pricingConfig?.currency || 'PHP';
 
+    // Service fee derived from pricing config (display only — authoritative calculation is server-side)
+    const feeCfg = pricingConfig?.service_fee ?? null;
+    const feeActive = feeCfg?.is_active ?? false;
+
     const getCategoryPrice = (catId) => {
         const cat = categories.find((c) => String(c.id) === String(catId));
         if (cat && cat.price !== null && cat.price !== undefined) {
@@ -51,6 +55,19 @@ export default function BookingWizard({ church, mass, categories, pricingConfig,
             .reduce((sum, item) => sum + getSlipPrice(item.category_id), 0)
             .toFixed(2);
     }, [data.intentions, categories, basePricePerIntention]);
+
+    // Client-side indicative fee calculation for display (server is authoritative)
+    const estimatedFee = useMemo(() => {
+        if (!feeActive || !feeCfg) return '0.00';
+        const subtotal = parseFloat(totalCalculated);
+        const rate = parseFloat(feeCfg.amount ?? '0');
+        switch (feeCfg.type) {
+            case 'fixed_per_order': return rate.toFixed(2);
+            case 'fixed_per_slip':  return (rate * data.intentions.length).toFixed(2);
+            case 'percentage':      return ((subtotal * rate) / 100).toFixed(2);
+            default: return '0.00';
+        }
+    }, [totalCalculated, feeCfg, feeActive, data.intentions.length]);
 
     // Client-side duplicate detection warning
     const duplicateWarnings = useMemo(() => {
@@ -804,10 +821,27 @@ export default function BookingWizard({ church, mass, categories, pricingConfig,
                                         <span>Total Slips Count:</span>
                                         <span className="font-semibold text-stone-800">{data.intentions.length} slip(s)</span>
                                     </div>
-                                    <div className="flex justify-between py-1 text-sm font-bold text-liturgical-950">
-                                        <span>Total Donation Amount (Arancel):</span>
-                                        <span className="font-mono text-base">{currency} {totalCalculated}</span>
+                                    <div className="flex justify-between py-1 border-b border-gold-200">
+                                        <span>Intentions Subtotal (Arancel):</span>
+                                        <span className="font-semibold font-mono text-stone-800">{currency} {totalCalculated}</span>
                                     </div>
+                                    {feeActive && feeCfg && parseFloat(estimatedFee) > 0 && (
+                                        <div className="flex justify-between py-1 border-b border-gold-200 text-stone-600">
+                                            <span>{feeCfg.label || 'Platform Convenience Fee'}</span>
+                                            <span className="font-semibold font-mono">{currency} {estimatedFee}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between py-1 text-sm font-bold text-liturgical-950">
+                                        <span>Total Donation Amount:</span>
+                                        <span className="font-mono text-base">
+                                            {currency} {feeActive && feeCfg ? (parseFloat(totalCalculated) + parseFloat(estimatedFee)).toFixed(2) : totalCalculated}
+                                        </span>
+                                    </div>
+                                    {feeActive && (
+                                        <p className="text-[11px] text-stone-400 italic">
+                                            * Indicative total. The confirmed amount is set at order creation.
+                                        </p>
+                                    )}
                                 </div>
                             )}
 

@@ -5,11 +5,13 @@ use App\Enums\MassStatus;
 use App\Http\Controllers\Admin\ChurchRegistrationController;
 use App\Http\Controllers\Admin\ChurchVerificationController;
 use App\Http\Controllers\Admin\PaymentReviewController;
+use App\Http\Controllers\Admin\PaymentSettingsController;
 use App\Http\Controllers\Admin\StaffDashboardController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Church\ChurchBrandingController;
 use App\Http\Controllers\Church\ChurchCategoryController;
 use App\Http\Controllers\Church\ChurchDashboardController;
+use App\Http\Controllers\Church\ChurchPaymentSettingsController;
 use App\Http\Controllers\Church\InvitationController;
 use App\Http\Controllers\Church\LectorMatrixController;
 use App\Http\Controllers\Church\MassScheduleController;
@@ -122,6 +124,12 @@ Route::middleware(['auth', 'ensure.staff:central_admin'])->prefix('admin')->name
     Route::post('/payments/{payment}/verify', [PaymentReviewController::class, 'verify'])->name('payments.verify');
     Route::post('/payments/{payment}/reject', [PaymentReviewController::class, 'reject'])->name('payments.reject');
 
+    // Payment Settings: Platform Fee Configuration & Parish GCash Management
+    Route::get('/payment-settings', [PaymentSettingsController::class, 'index'])->name('payment-settings.index');
+    Route::post('/payment-settings/configs', [PaymentSettingsController::class, 'store'])->name('payment-settings.configs.store');
+    Route::post('/payment-settings/configs/{config}/approve', [PaymentSettingsController::class, 'approve'])->name('payment-settings.configs.approve');
+    Route::post('/payment-settings/churches/{church}/gcash', [PaymentSettingsController::class, 'updateChurchGcash'])->name('payment-settings.churches.gcash');
+
     // User & Staff Oversight
     Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
     Route::post('/users', [UserManagementController::class, 'store'])->name('users.store');
@@ -164,6 +172,10 @@ Route::middleware(['auth', 'ensure.staff:church_admin'])->prefix('churches/{chur
     Route::delete('/memberships/{membership}', [MembershipController::class, 'destroy'])->name('memberships.destroy');
     Route::post('/invitations', [InvitationController::class, 'store'])->name('invitations.store');
     Route::delete('/invitations/{invitation}', [InvitationController::class, 'revoke'])->name('invitations.revoke');
+
+    // GCash Payment Settings
+    Route::get('/payment-settings', [ChurchPaymentSettingsController::class, 'edit'])->name('payment-settings.edit');
+    Route::post('/payment-settings', [ChurchPaymentSettingsController::class, 'update'])->name('payment-settings.update');
 });
 
 // Lector Staff Routes

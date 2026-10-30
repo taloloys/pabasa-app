@@ -6,8 +6,42 @@ import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
+function CopyButton({ text }) {
+    const [copied, setCopied] = useState(false);
+    const handleCopy = () => {
+        navigator.clipboard.writeText(text).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
+    };
+    return (
+        <button
+            type="button"
+            onClick={handleCopy}
+            className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold rounded border border-liturgical-300 bg-liturgical-50 text-liturgical-800 hover:bg-liturgical-100 transition"
+        >
+            {copied ? (
+                <>
+                    <svg className="w-3 h-3 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Copied
+                </>
+            ) : (
+                <>
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    Copy
+                </>
+            )}
+        </button>
+    );
+}
+
 export default function Payment({ order, church, mass, payment, guestToken }) {
     const [previewUrl, setPreviewUrl] = useState(null);
+    const [qrLightbox, setQrLightbox] = useState(false);
 
     const { data, setData, post, processing, errors } = useForm({
         reference_number: '',
@@ -29,6 +63,16 @@ export default function Payment({ order, church, mass, payment, guestToken }) {
     };
 
     const isSubmitted = payment?.status === 'pending_verification' || payment?.status === 'needs_review' || payment?.status === 'verified';
+
+    // Derive fee breakdown from the order's pricing snapshot
+    const snapshot = order.pricing_snapshot;
+    const slipsSubtotal = snapshot?.slips_subtotal ?? null;
+    const serviceFeeAmount = snapshot?.service_fee?.calculated_amount ?? null;
+    const serviceFeeLabel = snapshot?.service_fee?.label ?? 'Platform Convenience Fee';
+    const hasFeeBreakdown = slipsSubtotal !== null && serviceFeeAmount !== null && parseFloat(serviceFeeAmount) > 0;
+
+    const gcashName = church.gcash_name || church.name;
+    const gcashNumber = church.gcash_number || church.contact_phone;
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-[#FDFBF7] via-[#FAF6EE] to-[#F5ECE0] text-stone-800 antialiased selection:bg-liturgical-800 selection:text-gold-200">
@@ -88,7 +132,7 @@ export default function Payment({ order, church, mass, payment, guestToken }) {
                         </div>
 
                         <div className="text-right">
-                            <span className="text-[11px] text-stone-500 block uppercase font-medium">Expected Offering</span>
+                            <span className="text-[11px] text-stone-500 block uppercase font-medium">Total Offering Due</span>
                             <span className="font-bold text-2xl text-liturgical-950 block">
                                 {order.currency} {order.expected_amount}
                             </span>
@@ -96,27 +140,92 @@ export default function Payment({ order, church, mass, payment, guestToken }) {
                     </div>
 
                     <div className="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Left: GCash Instructions */}
-                        <div className="space-y-4 text-xs text-stone-600">
+                        {/* Left: GCash Instructions & QR */}
+                        <div className="space-y-5 text-xs text-stone-600">
                             <h2 className="font-cinzel text-base font-bold text-liturgical-950">
                                 How to Pay via GCash:
                             </h2>
 
+                            {/* QR Code Display */}
+                            <div className="rounded-xl border border-gold-200 bg-gold-50/40 p-4 space-y-3">
+                                {church.gcash_qr_url ? (
+                                    <div className="flex flex-col items-center space-y-2">
+                                        <div className="text-[11px] font-bold text-gold-800 uppercase tracking-wider">
+                                            Scan to Pay via GCash
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setQrLightbox(true)}
+                                            className="group relative border-4 border-white shadow-md rounded-lg overflow-hidden hover:shadow-xl transition"
+                                            title="Click to enlarge QR code"
+                                        >
+                                            <img
+                                                src={church.gcash_qr_url}
+                                                alt="Parish GCash QR Code"
+                                                className="h-40 w-40 object-contain group-hover:scale-105 transition"
+                                            />
+                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/20 transition rounded-lg">
+                                                <span className="text-white text-[10px] font-bold bg-black/50 px-2 py-1 rounded">Enlarge</span>
+                                            </div>
+                                        </button>
+                                        <a
+                                            href={church.gcash_qr_url}
+                                            download
+                                            className="text-[11px] text-liturgical-700 hover:text-liturgical-900 underline"
+                                        >
+                                            Download QR Code
+                                        </a>
+                                    </div>
+                                ) : (
+                                    <div className="text-center p-3 text-stone-400 italic text-[11px]">
+                                        QR code not yet configured for this parish. Use the account number below.
+                                    </div>
+                                )}
+
+                                {/* Account details */}
+                                <div className="space-y-1.5 text-xs pt-1 border-t border-gold-200">
+                                    <div className="flex justify-between">
+                                        <span className="text-stone-500 font-medium">Account Name:</span>
+                                        <span className="font-bold text-stone-900">{gcashName}</span>
+                                    </div>
+                                    {gcashNumber && (
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-stone-500 font-medium">GCash Number:</span>
+                                            <span className="flex items-center font-mono font-bold text-liturgical-900">
+                                                {gcashNumber}
+                                                <CopyButton text={gcashNumber} />
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Steps */}
                             <ol className="list-decimal pl-4 space-y-2 leading-relaxed">
                                 <li>Open your GCash application on your mobile device.</li>
-                                <li>
-                                    Send offering to the verified parish GCash account:
-                                    <span className="font-bold text-stone-900 block mt-0.5">
-                                        Account: {church.name}
-                                    </span>
-                                    <span className="font-mono font-bold text-liturgical-900 block">
-                                        Number: {church.contact_phone || '0917-123-4567'}
-                                    </span>
-                                </li>
+                                <li>Scan the QR code above <span className="font-semibold">or</span> send to the GCash number shown.</li>
                                 <li>Enter the exact amount: <span className="font-bold text-stone-900">{order.currency} {order.expected_amount}</span>.</li>
                                 <li>Take a clear screenshot of the confirmed transaction screen showing the reference number and date.</li>
                                 <li>Upload the screenshot in the form on the right.</li>
                             </ol>
+
+                            {/* Fee Breakdown */}
+                            {hasFeeBreakdown && (
+                                <div className="rounded-lg border border-stone-200 bg-stone-50/70 divide-y divide-stone-200 text-xs">
+                                    <div className="px-3 py-2 flex justify-between">
+                                        <span className="text-stone-600">Intentions Subtotal (Arancel)</span>
+                                        <span className="font-semibold font-mono text-stone-800">{order.currency} {slipsSubtotal}</span>
+                                    </div>
+                                    <div className="px-3 py-2 flex justify-between">
+                                        <span className="text-stone-600">{serviceFeeLabel}</span>
+                                        <span className="font-semibold font-mono text-stone-800">{order.currency} {serviceFeeAmount}</span>
+                                    </div>
+                                    <div className="px-3 py-2 flex justify-between font-bold text-stone-900 bg-gold-50/50">
+                                        <span>Total Offering Due</span>
+                                        <span className="font-mono">{order.currency} {order.expected_amount}</span>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="p-3 rounded-md bg-stone-50 border border-stone-200 text-[11px] text-stone-500">
                                 <span className="font-semibold text-stone-700 block">Solemn Verification Notice:</span>
@@ -172,7 +281,7 @@ export default function Payment({ order, church, mass, payment, guestToken }) {
 
                                     <div>
                                         <InputLabel value="GCash Screenshot (JPEG, PNG, WebP &le; 5MB) *" />
-                                        <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-stone-300 rounded-lg hover:border-gold-400 transition cursor-pointer">
+                                        <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-stone-300 rounded-lg hover:border-gold-400 transition cursor-pointer relative">
                                             <div className="space-y-1 text-center">
                                                 {previewUrl ? (
                                                     <div className="space-y-2">
@@ -213,7 +322,36 @@ export default function Payment({ order, church, mass, payment, guestToken }) {
                     </div>
                 </div>
             </main>
+
+            {/* QR Code Lightbox */}
+            {qrLightbox && church.gcash_qr_url && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6"
+                    onClick={() => setQrLightbox(false)}
+                >
+                    <div className="bg-white rounded-2xl p-6 shadow-2xl max-w-sm w-full text-center space-y-4" onClick={(e) => e.stopPropagation()}>
+                        <h3 className="font-cinzel font-bold text-liturgical-950">Scan with GCash App</h3>
+                        <p className="text-xs text-stone-500">{gcashName}</p>
+                        <img src={church.gcash_qr_url} alt="GCash QR Code" className="w-full rounded-lg border border-stone-200" />
+                        <div className="flex gap-3 justify-center">
+                            <a
+                                href={church.gcash_qr_url}
+                                download
+                                className="px-4 py-2 text-xs font-bold text-liturgical-800 border border-liturgical-300 rounded-lg hover:bg-liturgical-50 transition"
+                            >
+                                Download QR
+                            </a>
+                            <button
+                                type="button"
+                                onClick={() => setQrLightbox(false)}
+                                className="px-4 py-2 text-xs font-bold text-stone-600 border border-stone-300 rounded-lg hover:bg-stone-50 transition"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
-

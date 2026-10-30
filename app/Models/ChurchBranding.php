@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class ChurchBranding extends Model
 {
@@ -20,6 +21,9 @@ class ChurchBranding extends Model
         'public_description',
         'contact_email',
         'contact_phone',
+        'gcash_name',
+        'gcash_number',
+        'gcash_qr_path',
         'approved_at',
         'approved_by',
     ];
@@ -29,6 +33,18 @@ class ChurchBranding extends Model
         return [
             'approved_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Get the full public URL for the GCash QR code image, or null if not uploaded.
+     */
+    public function getGcashQrUrlAttribute(): ?string
+    {
+        if (! $this->gcash_qr_path) {
+            return null;
+        }
+
+        return Storage::disk('public')->url($this->gcash_qr_path);
     }
 
     public function church(): BelongsTo

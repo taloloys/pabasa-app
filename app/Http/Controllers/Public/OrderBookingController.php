@@ -64,6 +64,7 @@ class OrderBookingController extends Controller
                 'currency' => $pricingConfig->currency,
                 'price_per_intention' => $pricingConfig->pricing_rules['base_price_per_intention'] ?? null,
                 'category_prices' => $pricingConfig->pricing_rules['category_prices'] ?? [],
+                'service_fee' => $pricingConfig->pricing_rules['service_fee'] ?? null,
             ] : null,
             'user' => $request->user() ? [
                 'name' => $request->user()->name,
@@ -136,11 +137,15 @@ class OrderBookingController extends Controller
                 'submitter_email' => $order->submitter_email,
                 'submitter_type' => $order->submitter_type,
                 'intentions_count' => $order->intentions->count(),
+                'pricing_snapshot' => $order->pricing_snapshot,
             ],
             'church' => [
                 'id' => $order->church->id,
                 'name' => $order->church->name,
                 'contact_phone' => $order->church->contact_phone,
+                'gcash_name' => $order->church->branding?->gcash_name,
+                'gcash_number' => $order->church->branding?->gcash_number,
+                'gcash_qr_url' => $order->church->branding?->gcash_qr_url,
             ],
             'mass' => [
                 'id' => $order->massSchedule->id,
