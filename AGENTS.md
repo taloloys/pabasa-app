@@ -4,8 +4,50 @@
 
 A multi-tenant church reading-intention management platform. Churches publish Mass schedules, parishioners (registered or guest) submit prayer intentions with GCash screenshot payment, Central Admin verifies payments, lectors manage reading lists during Mass, and settlements/payouts are tracked with full audit trails.
 
-**Canonical specification:** [`multi_church_reading_system_development_specification.md`](multi_church_reading_system_development_specification.md)
+**Canonical specification:** [`docs/multi_church_reading_system_development_specification.md`](docs/multi_church_reading_system_development_specification.md)
 — this file is the **source of truth** for all business rules, data models, state transitions, authorization, and workflows. When in doubt, read the spec.
+
+**Development phases tracker:** [`docs/DEV_PHASE.md`](docs/DEV_PHASE.md)  
+**Performance optimization roadmap:** [`docs/performance/OPTIMIZATION_ROADMAP.md`](docs/performance/OPTIMIZATION_ROADMAP.md)
+
+---
+
+## Performance Optimization Rules
+
+Read `docs/performance/OPTIMIZATION_ROADMAP.md` before doing any optimization work.
+
+You are responsible for helping maintain and execute this optimization roadmap.
+
+Follow these rules:
+
+1. Identify the current phase and its status.
+2. Review previous findings and implementation reports before repeating investigations.
+3. Inspect the actual project files and current Docker/database environment rather than assuming previous reports are accurate.
+4. Work only on the current approved phase.
+5. Do not make unrelated changes.
+6. Do not perform destructive database operations or modify development data without my explicit approval.
+7. Do not mark a phase complete without meeting its acceptance criteria.
+8. Record all modified files, commands, tests, measurements, and remaining issues.
+9. Update the roadmap after every approved optimization session.
+10. Preserve historical benchmark results.
+
+Before implementing changes, provide:
+
+- Current phase and status.
+- Findings from the existing implementation.
+- Problems identified.
+- Proposed changes.
+- Files expected to be modified.
+- Risks and regression possibilities.
+- Verification procedure.
+
+Wait for approval before making implementation changes.
+
+For performance work, always establish a baseline and compare results using the same environment and measurement methodology.
+
+Do not recommend a complete React-to-Blade migration unless actual measurements demonstrate that the current rendering architecture is a significant bottleneck and the proposed alternative provides a meaningful performance and maintenance advantage.
+
+Start by reviewing the roadmap and reporting the current state of Phase 0. Do not execute database modifications.
 
 ---
 

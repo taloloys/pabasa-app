@@ -30,4 +30,12 @@ class DatabaseSafetyGuardTest extends TestCase
             $this->app['config']->set("database.connections.{$connection}.database", $originalDb);
         }
     }
+
+    public function test_testing_connection_uses_dedicated_pabasa_test_user(): void
+    {
+        $connection = $this->app['config']->get('database.default');
+        $username = $this->app['config']->get("database.connections.{$connection}.username");
+
+        $this->assertEquals('pabasa_test', $username);
+    }
 }

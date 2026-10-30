@@ -8,8 +8,9 @@ Churches publish Mass schedules, parishioners (registered or guest) submit praye
 
 ## Documentation
 
-- **Canonical Specification:** [`multi_church_reading_system_development_specification.md`](multi_church_reading_system_development_specification.md) — The single source of truth for business rules, data models, state machines, and workflows.
-- **Development Phase Tracker:** [`DEV_PHASE.md`](DEV_PHASE.md) — Step-by-step implementation roadmap and deliverables from Phase 0 to Phase 6.
+- **Canonical Specification:** [`docs/multi_church_reading_system_development_specification.md`](docs/multi_church_reading_system_development_specification.md) — The single source of truth for business rules, data models, state machines, and workflows.
+- **Development Phase Tracker:** [`docs/DEV_PHASE.md`](docs/DEV_PHASE.md) — Step-by-step implementation roadmap and deliverables from Phase 0 to Phase 6.
+- **Performance Optimization Roadmap:** [`docs/performance/OPTIMIZATION_ROADMAP.md`](docs/performance/OPTIMIZATION_ROADMAP.md) — Central optimization plan, performance findings, and progress tracker.
 
 ---
 
