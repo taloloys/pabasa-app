@@ -12,6 +12,7 @@ import {
     TagIcon,
     UsersIcon,
     ChurchIcon,
+    ShieldIcon,
 } from '@/Components/Icons';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
@@ -83,29 +84,6 @@ export default function AuthenticatedLayout({ header, children }) {
                                     Track Intentions
                                 </NavLink>
 
-                                {isCentralAdmin && (
-                                    <>
-                                        <NavLink
-                                            href={route('admin.dashboard')}
-                                            active={route().current('admin.dashboard')}
-                                        >
-                                            Diocese Console
-                                        </NavLink>
-                                        <NavLink
-                                            href={route('admin.payments.index')}
-                                            active={route().current('admin.payments.*')}
-                                        >
-                                            Review Payments
-                                        </NavLink>
-                                        <NavLink
-                                            href={route('admin.users.index')}
-                                            active={route().current('admin.users.*')}
-                                        >
-                                            Staff & Users
-                                        </NavLink>
-                                    </>
-                                )}
-
                                 {/* Church Selector / Links */}
                                 {memberships.map((membership) => (
                                     <NavLink
@@ -126,10 +104,21 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         {/* Right Header items */}
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center space-x-4">
-                            <LocaleSwitcher />
+                        <div className="hidden sm:ms-6 sm:flex sm:items-center space-x-3">
+                            {/* Central Admin Quick Switcher */}
+                            {isCentralAdmin && (
+                                <Link
+                                    href={route('admin.dashboard')}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-liturgical-950 bg-gradient-to-r from-gold-100 to-amber-100/90 border border-gold-300 hover:border-gold-400 hover:shadow-2xs transition"
+                                    title="Open Archdiocese Chancery Console"
+                                >
+                                    <ShieldIcon className="w-3.5 h-3.5 text-liturgical-800" />
+                                    <span>Diocese Console</span>
+                                    <span className="text-[10px] text-gold-700">&rarr;</span>
+                                </Link>
+                            )}
 
-                            {roleBadge}
+                            <LocaleSwitcher />
 
                             <div className="relative">
                                 <Dropdown>
@@ -137,11 +126,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                         <span className="inline-flex rounded-xl">
                                             <button
                                                 type="button"
-                                                className="inline-flex items-center rounded-xl border border-gold-300/80 bg-white px-3.5 py-1.5 text-xs font-semibold text-stone-800 shadow-2xs transition hover:bg-ivory-100 hover:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/40 cursor-pointer"
+                                                className="inline-flex items-center gap-2 rounded-xl border border-gold-300/80 bg-white px-3 py-1.5 text-xs font-semibold text-stone-800 shadow-2xs transition hover:bg-ivory-100 hover:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/40 cursor-pointer"
                                             >
-                                                <span>{user.name}</span>
+                                                <div className="h-5 w-5 rounded-full bg-liturgical-900 text-gold-300 flex items-center justify-center font-bold text-[10px]">
+                                                    {user?.name?.charAt(0) || 'U'}
+                                                </div>
+                                                <span className="max-w-[120px] truncate">{user.name}</span>
                                                 <svg
-                                                    className="-me-0.5 ms-2 h-4 w-4 text-stone-400"
+                                                    className="-me-0.5 h-4 w-4 text-stone-400"
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     viewBox="0 0 20 20"
                                                     fill="currentColor"
@@ -158,9 +150,34 @@ export default function AuthenticatedLayout({ header, children }) {
 
                                     <Dropdown.Content>
                                         <div className="px-4 py-2.5 border-b border-stone-100 bg-ivory-50/50 text-xs text-stone-500">
-                                            <div className="text-[10px] font-serif uppercase tracking-wider text-gold-700">Signed In As</div>
-                                            <strong className="text-liturgical-950 font-bold">{user.email}</strong>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <span className="text-[10px] font-serif uppercase tracking-wider text-gold-700">Signed In</span>
+                                                {roleBadge}
+                                            </div>
+                                            <strong className="text-liturgical-950 font-bold block truncate">{user.name}</strong>
+                                            <span className="text-[11px] text-stone-500 block truncate">{user.email}</span>
                                         </div>
+
+                                        {isCentralAdmin && (
+                                            <div className="border-b border-stone-100 py-1 bg-amber-50/30">
+                                                <div className="px-4 py-1 text-[10px] font-bold text-gold-800 uppercase tracking-wider">
+                                                    Chancery Administration
+                                                </div>
+                                                <Dropdown.Link href={route('admin.dashboard')}>
+                                                    Diocese Console
+                                                </Dropdown.Link>
+                                                <Dropdown.Link href={route('admin.payments.index')}>
+                                                    Review Payments
+                                                </Dropdown.Link>
+                                                <Dropdown.Link href={route('admin.payment-settings.index')}>
+                                                    Payment & Fee Settings
+                                                </Dropdown.Link>
+                                                <Dropdown.Link href={route('admin.users.index')}>
+                                                    Staff & Users
+                                                </Dropdown.Link>
+                                            </div>
+                                        )}
+
                                         <Dropdown.Link href={route('profile.edit')}>
                                             Account Settings
                                         </Dropdown.Link>
@@ -265,6 +282,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     Review Payments
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink
+                                    href={route('admin.payment-settings.index')}
+                                    active={route().current('admin.payment-settings.*')}
+                                >
+                                    Payment Settings
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
                                     href={route('admin.users.index')}
                                     active={route().current('admin.users.*')}
                                 >
@@ -321,11 +344,10 @@ export default function AuthenticatedLayout({ header, children }) {
                         <div className="flex items-center space-x-1 sm:space-x-3 overflow-x-auto text-xs">
                             <Link
                                 href={route('church.dashboard', { church: currentChurchId })}
-                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${
-                                    route().current('church.dashboard')
+                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${route().current('church.dashboard')
                                         ? 'bg-liturgical-900 text-gold-200 font-bold shadow-2xs'
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
-                                }`}
+                                    }`}
                             >
                                 <ChartBarIcon className="w-3.5 h-3.5" />
                                 <span>Overview</span>
@@ -333,11 +355,10 @@ export default function AuthenticatedLayout({ header, children }) {
 
                             <Link
                                 href={route('church.masses.index', { church: currentChurchId })}
-                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${
-                                    route().current('church.masses.*')
+                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${route().current('church.masses.*')
                                         ? 'bg-liturgical-900 text-gold-200 font-bold shadow-2xs'
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
-                                }`}
+                                    }`}
                             >
                                 <CalendarIcon className="w-3.5 h-3.5" />
                                 <span>Mass Schedules</span>
@@ -345,11 +366,10 @@ export default function AuthenticatedLayout({ header, children }) {
 
                             <Link
                                 href={route('church.lectors.matrix', { church: currentChurchId })}
-                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${
-                                    route().current('church.lectors.*')
+                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${route().current('church.lectors.*')
                                         ? 'bg-liturgical-900 text-gold-200 font-bold shadow-2xs'
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
-                                }`}
+                                    }`}
                             >
                                 <BookOpenIcon className="w-3.5 h-3.5" />
                                 <span>Lector Roster</span>
@@ -357,11 +377,10 @@ export default function AuthenticatedLayout({ header, children }) {
 
                             <Link
                                 href={route('church.categories.index', { church: currentChurchId })}
-                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${
-                                    route().current('church.categories.*')
+                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${route().current('church.categories.*')
                                         ? 'bg-liturgical-900 text-gold-200 font-bold shadow-2xs'
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
-                                }`}
+                                    }`}
                             >
                                 <TagIcon className="w-3.5 h-3.5" />
                                 <span>Categories</span>
@@ -369,11 +388,10 @@ export default function AuthenticatedLayout({ header, children }) {
 
                             <Link
                                 href={route('church.memberships.index', { church: currentChurchId })}
-                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${
-                                    route().current('church.memberships.*')
+                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${route().current('church.memberships.*')
                                         ? 'bg-liturgical-900 text-gold-200 font-bold shadow-2xs'
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
-                                }`}
+                                    }`}
                             >
                                 <UsersIcon className="w-3.5 h-3.5" />
                                 <span>Staff</span>
@@ -381,11 +399,10 @@ export default function AuthenticatedLayout({ header, children }) {
 
                             <Link
                                 href={route('church.branding.edit', { church: currentChurchId })}
-                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${
-                                    route().current('church.branding.*')
+                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${route().current('church.branding.*')
                                         ? 'bg-liturgical-900 text-gold-200 font-bold shadow-2xs'
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-ivory-100'
-                                }`}
+                                    }`}
                             >
                                 <ChurchIcon className="w-3.5 h-3.5" />
                                 <span>Profile & Branding</span>
@@ -402,11 +419,10 @@ export default function AuthenticatedLayout({ header, children }) {
                         <div className="flex items-center space-x-1 sm:space-x-3 overflow-x-auto text-xs">
                             <Link
                                 href={route('lector.dashboard', { church: currentChurchId })}
-                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${
-                                    route().current('lector.dashboard')
+                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${route().current('lector.dashboard')
                                         ? 'bg-sky-900 text-sky-100 font-bold shadow-2xs'
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-sky-50'
-                                }`}
+                                    }`}
                             >
                                 <BookOpenIcon className="w-3.5 h-3.5" />
                                 <span>Lector Console</span>
@@ -414,11 +430,10 @@ export default function AuthenticatedLayout({ header, children }) {
 
                             <Link
                                 href={route('lector.masses.index', { church: currentChurchId })}
-                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${
-                                    route().current('lector.masses.*')
+                                className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1.5 shrink-0 ${route().current('lector.masses.*')
                                         ? 'bg-sky-900 text-sky-100 font-bold shadow-2xs'
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-sky-50'
-                                }`}
+                                    }`}
                             >
                                 <CalendarIcon className="w-3.5 h-3.5" />
                                 <span>Assigned Masses</span>

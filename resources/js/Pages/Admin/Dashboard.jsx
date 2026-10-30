@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import AdminLayout from '@/Layouts/AdminLayout';
 import StatusBadge from '@/Components/StatusBadge';
 import Card from '@/Components/Card';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -32,7 +32,7 @@ export default function AdminDashboard({ metrics, recent_churches = [], recent_a
     };
 
     return (
-        <AuthenticatedLayout
+        <AdminLayout
             header={
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
@@ -129,6 +129,28 @@ export default function AdminDashboard({ metrics, recent_churches = [], recent_a
                                 Manage &rarr;
                             </Link>
                         </div>
+                    </div>
+                </div>
+
+                {/* Quick Action: Payment & Fee Controls */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-xl border border-gold-300/70 bg-gradient-to-r from-ivory-50 via-white to-ivory-50 shadow-xs">
+                    <div>
+                        <h4 className="font-cinzel text-sm font-bold text-liturgical-950">Payment & Fee Governance</h4>
+                        <p className="text-xs text-stone-500 mt-0.5">Configure platform convenience fees, review pricing schedules, and manage parish GCash payment credentials.</p>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                        <Link
+                            href={route('admin.payments.index')}
+                            className="px-3.5 py-1.5 rounded-lg text-xs font-bold text-stone-700 bg-white border border-stone-300 hover:bg-stone-50 shadow-2xs transition"
+                        >
+                            Review Queue
+                        </Link>
+                        <Link
+                            href={route('admin.payment-settings.index')}
+                            className="px-3.5 py-1.5 rounded-lg text-xs font-bold text-white bg-liturgical-900 hover:bg-liturgical-950 shadow-xs transition"
+                        >
+                            Payment Settings &rarr;
+                        </Link>
                     </div>
                 </div>
 
@@ -463,6 +485,6 @@ export default function AdminDashboard({ metrics, recent_churches = [], recent_a
                     </div>
                 </div>
             )}
-        </AuthenticatedLayout>
+        </AdminLayout>
     );
 }

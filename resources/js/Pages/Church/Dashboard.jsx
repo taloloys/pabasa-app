@@ -102,7 +102,7 @@ export default function ChurchDashboard({ church, stats, recent_audit_logs = [] 
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
                         {/* 1. Mass Schedules */}
                         <Link
                             href={route('church.masses.index', { church: church.id })}
@@ -191,6 +191,31 @@ export default function ChurchDashboard({ church, stats, recent_audit_logs = [] 
                             </div>
                             <div className="mt-4 pt-3 border-t border-gold-100 text-xs font-bold text-liturgical-900 flex items-center justify-between">
                                 <span>Edit Parish Profile</span>
+                                <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                            </div>
+                        </Link>
+
+                        {/* 5. GCash Payment Settings */}
+                        <Link
+                            href={route('church.payment-settings.edit', { church: church.id })}
+                            className="group relative overflow-hidden rounded-2xl border border-gold-300/80 bg-white p-6 shadow-xs hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between"
+                        >
+                            <div className="absolute top-0 inset-x-0 h-1 bg-emerald-600" />
+                            <div>
+                                <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 mb-3 group-hover:scale-110 transition-transform">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                                    </svg>
+                                </div>
+                                <h4 className="font-cinzel text-sm font-bold text-liturgical-950 group-hover:text-emerald-700 transition">
+                                    GCash & QR Settings
+                                </h4>
+                                <p className="mt-1 text-xs text-stone-600 leading-relaxed">
+                                    Upload parish GCash QR code image and configure registered account name and mobile offering number.
+                                </p>
+                            </div>
+                            <div className="mt-4 pt-3 border-t border-emerald-100 text-xs font-bold text-emerald-800 flex items-center justify-between">
+                                <span>Configure GCash</span>
                                 <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
                             </div>
                         </Link>

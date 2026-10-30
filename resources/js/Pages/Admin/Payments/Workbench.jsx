@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import AdminLayout from '@/Layouts/AdminLayout';
 
 export default function Workbench({ payment, duplicateReferenceCount = 0 }) {
     const [zoomLevel, setZoomLevel] = useState(1);
@@ -31,7 +31,7 @@ export default function Workbench({ payment, duplicateReferenceCount = 0 }) {
     };
 
     return (
-        <AuthenticatedLayout
+        <AdminLayout
             header={
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -104,11 +104,10 @@ export default function Workbench({ payment, duplicateReferenceCount = 0 }) {
                                         <span className="text-[11px] font-semibold text-stone-500 uppercase">Expected Amount</span>
                                         <p className="text-lg font-mono font-bold text-stone-900 mt-1">₱{payment.expected_amount}</p>
                                     </div>
-                                    <div className={`p-3 rounded-xl border ${
-                                        payment.submitted_amount && Number(payment.submitted_amount) < Number(payment.expected_amount)
-                                            ? 'bg-rose-50 border-rose-200 text-rose-900'
-                                            : 'bg-amber-50/60 border-amber-200 text-amber-950'
-                                    }`}>
+                                    <div className={`p-3 rounded-xl border ${payment.submitted_amount && Number(payment.submitted_amount) < Number(payment.expected_amount)
+                                        ? 'bg-rose-50 border-rose-200 text-rose-900'
+                                        : 'bg-amber-50/60 border-amber-200 text-amber-950'
+                                        }`}>
                                         <span className="text-[11px] font-semibold uppercase">Submitted Amount</span>
                                         <p className="text-lg font-mono font-bold mt-1">₱{payment.submitted_amount || '0.00'}</p>
                                     </div>
@@ -127,17 +126,22 @@ export default function Workbench({ payment, duplicateReferenceCount = 0 }) {
                                     <div className="pt-2">
                                         <span className="text-xs text-stone-500 uppercase font-semibold">Active Exceptions:</span>
                                         <div className="mt-2 space-y-1.5">
-                                            {payment.exceptions.map((exc) => (
-                                                <div key={exc.id} className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs">
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="font-bold text-rose-800 capitalize">{exc.exception_type.replace(/_/g, ' ')}</span>
-                                                        <span className="text-[10px] uppercase font-semibold text-rose-600">{exc.status}</span>
+                                            {payment.exceptions.map((exc) => {
+                                                const excType = exc.type || exc.exception_type || 'exception';
+                                                return (
+                                                    <div key={exc.id} className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="font-bold text-rose-800 capitalize">
+                                                                {typeof excType === 'string' ? excType.replace(/_/g, ' ') : 'exception'}
+                                                            </span>
+                                                            <span className="text-[10px] uppercase font-semibold text-rose-600">{exc.status}</span>
+                                                        </div>
+                                                        {(exc.description || exc.details) && (
+                                                            <p className="text-rose-700 mt-1">{exc.description || (typeof exc.details === 'object' ? JSON.stringify(exc.details) : exc.details)}</p>
+                                                        )}
                                                     </div>
-                                                    {exc.details && (
-                                                        <p className="text-rose-700 mt-1">{JSON.stringify(exc.details)}</p>
-                                                    )}
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 )}
@@ -171,22 +175,20 @@ export default function Workbench({ payment, duplicateReferenceCount = 0 }) {
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab('verify')}
-                                        className={`flex-1 pb-2.5 text-xs font-semibold uppercase tracking-wider transition border-b-2 ${
-                                            activeTab === 'verify'
-                                                ? 'border-emerald-600 text-emerald-800'
-                                                : 'border-transparent text-stone-400 hover:text-stone-600'
-                                        }`}
+                                        className={`flex-1 pb-2.5 text-xs font-semibold uppercase tracking-wider transition border-b-2 ${activeTab === 'verify'
+                                            ? 'border-emerald-600 text-emerald-800'
+                                            : 'border-transparent text-stone-400 hover:text-stone-600'
+                                            }`}
                                     >
                                         Verify & Confirm
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab('reject')}
-                                        className={`flex-1 pb-2.5 text-xs font-semibold uppercase tracking-wider transition border-b-2 ${
-                                            activeTab === 'reject'
-                                                ? 'border-rose-600 text-rose-800'
-                                                : 'border-transparent text-stone-400 hover:text-stone-600'
-                                        }`}
+                                        className={`flex-1 pb-2.5 text-xs font-semibold uppercase tracking-wider transition border-b-2 ${activeTab === 'reject'
+                                            ? 'border-rose-600 text-rose-800'
+                                            : 'border-transparent text-stone-400 hover:text-stone-600'
+                                            }`}
                                     >
                                         Reject Payment
                                     </button>
@@ -343,7 +345,7 @@ export default function Workbench({ payment, duplicateReferenceCount = 0 }) {
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </AdminLayout>
     );
 }
 

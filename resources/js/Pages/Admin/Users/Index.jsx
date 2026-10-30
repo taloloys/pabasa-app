@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import AdminLayout from '@/Layouts/AdminLayout';
 import StatusBadge from '@/Components/StatusBadge';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
@@ -63,7 +63,7 @@ export default function UsersIndex({ users, churches = [], filters = {} }) {
     const totalCount = users.total || 0;
 
     return (
-        <AuthenticatedLayout
+        <AdminLayout
             header={
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
@@ -303,11 +303,10 @@ export default function UsersIndex({ users, churches = [], filters = {} }) {
                                                         <button
                                                             type="button"
                                                             onClick={() => handleToggleUserStatus(user)}
-                                                            className={`text-xs font-semibold px-2 py-1 rounded transition ${
-                                                                user.status === 'active'
+                                                            className={`text-xs font-semibold px-2 py-1 rounded transition ${user.status === 'active'
                                                                     ? 'text-rose-700 hover:text-rose-900 hover:bg-rose-50'
                                                                     : 'text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50'
-                                                            }`}
+                                                                }`}
                                                         >
                                                             {user.status === 'active' ? 'Disable' : 'Activate'}
                                                         </button>
@@ -334,13 +333,12 @@ export default function UsersIndex({ users, churches = [], filters = {} }) {
                                         href={link.url || '#'}
                                         preserveScroll
                                         preserveState
-                                        className={`px-2.5 py-1 text-xs rounded-md font-medium transition ${
-                                            link.active
+                                        className={`px-2.5 py-1 text-xs rounded-md font-medium transition ${link.active
                                                 ? 'bg-amber-800 text-white font-bold'
                                                 : link.url
-                                                ? 'text-stone-700 hover:bg-stone-200'
-                                                : 'text-stone-400 cursor-not-allowed'
-                                        }`}
+                                                    ? 'text-stone-700 hover:bg-stone-200'
+                                                    : 'text-stone-400 cursor-not-allowed'
+                                            }`}
                                         dangerouslySetInnerHTML={{ __html: link.label }}
                                     />
                                 ))}
@@ -365,7 +363,7 @@ export default function UsersIndex({ users, churches = [], filters = {} }) {
                     churches={churches}
                 />
             )}
-        </AuthenticatedLayout>
+        </AdminLayout>
     );
 }
 

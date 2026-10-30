@@ -127,6 +127,12 @@ export default function Dashboard() {
                                         Review Payments
                                     </Link>
                                     <Link
+                                        href={route('admin.payment-settings.index')}
+                                        className="px-2.5 py-1 rounded bg-liturgical-100 text-liturgical-900 font-semibold hover:bg-liturgical-200 transition"
+                                    >
+                                        Payment Settings
+                                    </Link>
+                                    <Link
                                         href={route('admin.users.index')}
                                         className="px-2.5 py-1 rounded bg-liturgical-100 text-liturgical-900 font-semibold hover:bg-liturgical-200 transition"
                                     >

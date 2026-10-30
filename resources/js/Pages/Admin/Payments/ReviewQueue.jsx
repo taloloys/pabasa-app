@@ -1,6 +1,6 @@
 import React from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import AdminLayout from '@/Layouts/AdminLayout';
 
 export default function ReviewQueue({ payments, currentFilter }) {
     const handleFilterChange = (status) => {
@@ -23,7 +23,7 @@ export default function ReviewQueue({ payments, currentFilter }) {
     };
 
     return (
-        <AuthenticatedLayout
+        <AdminLayout
             header={
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
@@ -47,33 +47,30 @@ export default function ReviewQueue({ payments, currentFilter }) {
                         <button
                             type="button"
                             onClick={() => handleFilterChange('all')}
-                            className={`pb-3 text-sm font-medium border-b-2 transition ${
-                                currentFilter === 'all'
-                                    ? 'border-amber-800 text-amber-950 font-semibold'
-                                    : 'border-transparent text-stone-500 hover:text-stone-700'
-                            }`}
+                            className={`pb-3 text-sm font-medium border-b-2 transition ${currentFilter === 'all'
+                                ? 'border-amber-800 text-amber-950 font-semibold'
+                                : 'border-transparent text-stone-500 hover:text-stone-700'
+                                }`}
                         >
                             All Active Queue
                         </button>
                         <button
                             type="button"
                             onClick={() => handleFilterChange('pending_verification')}
-                            className={`pb-3 text-sm font-medium border-b-2 transition ${
-                                currentFilter === 'pending_verification'
-                                    ? 'border-amber-800 text-amber-950 font-semibold'
-                                    : 'border-transparent text-stone-500 hover:text-stone-700'
-                            }`}
+                            className={`pb-3 text-sm font-medium border-b-2 transition ${currentFilter === 'pending_verification'
+                                ? 'border-amber-800 text-amber-950 font-semibold'
+                                : 'border-transparent text-stone-500 hover:text-stone-700'
+                                }`}
                         >
                             Pending Verification
                         </button>
                         <button
                             type="button"
                             onClick={() => handleFilterChange('needs_review')}
-                            className={`pb-3 text-sm font-medium border-b-2 transition ${
-                                currentFilter === 'needs_review'
-                                    ? 'border-amber-800 text-amber-950 font-semibold'
-                                    : 'border-transparent text-stone-500 hover:text-stone-700'
-                            }`}
+                            className={`pb-3 text-sm font-medium border-b-2 transition ${currentFilter === 'needs_review'
+                                ? 'border-amber-800 text-amber-950 font-semibold'
+                                : 'border-transparent text-stone-500 hover:text-stone-700'
+                                }`}
                         >
                             Flagged Exceptions / Under Review
                         </button>
@@ -147,14 +144,17 @@ export default function ReviewQueue({ payments, currentFilter }) {
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col gap-1 items-start">
                                                         {getStatusBadge(payment.status)}
-                                                        {payment.exceptions?.map((exc) => (
-                                                            <span
-                                                                key={exc.id}
-                                                                className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200"
-                                                            >
-                                                                {exc.exception_type.replace(/_/g, ' ')}
-                                                            </span>
-                                                        ))}
+                                                        {payment.exceptions?.map((exc) => {
+                                                            const excType = exc.type || exc.exception_type || 'exception';
+                                                            return (
+                                                                <span
+                                                                    key={exc.id}
+                                                                    className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 capitalize"
+                                                                >
+                                                                    {typeof excType === 'string' ? excType.replace(/_/g, ' ') : 'exception'}
+                                                                </span>
+                                                            );
+                                                        })}
                                                     </div>
                                                 </td>
 
@@ -185,13 +185,12 @@ export default function ReviewQueue({ payments, currentFilter }) {
                                             key={idx}
                                             href={link.url || '#'}
                                             dangerouslySetInnerHTML={{ __html: link.label }}
-                                            className={`px-3 py-1.5 rounded-md border text-xs ${
-                                                link.active
-                                                    ? 'bg-amber-800 text-white border-amber-800'
-                                                    : link.url
+                                            className={`px-3 py-1.5 rounded-md border text-xs ${link.active
+                                                ? 'bg-amber-800 text-white border-amber-800'
+                                                : link.url
                                                     ? 'border-stone-200 hover:bg-stone-50 text-stone-700'
                                                     : 'border-stone-100 text-stone-300 pointer-events-none'
-                                            }`}
+                                                }`}
                                         />
                                     ))}
                                 </div>
@@ -200,7 +199,7 @@ export default function ReviewQueue({ payments, currentFilter }) {
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </AdminLayout>
     );
 }
 
