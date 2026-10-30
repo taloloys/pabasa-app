@@ -15,6 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+COPY docker/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini
+
 WORKDIR /var/www/html
 
 EXPOSE 8000

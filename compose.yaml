@@ -6,6 +6,7 @@ services:
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
+      - ./docker/php/conf.d/opcache.ini:/usr/local/etc/php/conf.d/docker-php-ext-opcache.ini:ro
     ports:
       - "8000:8000"
     environment:

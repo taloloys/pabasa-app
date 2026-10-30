@@ -64,6 +64,26 @@ return [
             ]) : [],
         ],
 
+        'testing' => [
+            'driver' => 'mysql',
+            'url' => env('DB_TEST_URL', env('DB_URL')),
+            'host' => env('DB_TEST_HOST', env('DB_HOST', 'mysql')),
+            'port' => env('DB_TEST_PORT', env('DB_PORT', '3306')),
+            'database' => env('DB_TEST_DATABASE', 'testing'),
+            'username' => env('DB_TEST_USERNAME', env('DB_USERNAME', 'pabasa')),
+            'password' => env('DB_TEST_PASSWORD', env('DB_PASSWORD', 'local_dev_password')),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),
