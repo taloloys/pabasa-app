@@ -93,6 +93,7 @@ Route::get('/churches/{church}/masses/{mass}/book', [OrderBookingController::cla
 Route::post('/orders', [OrderBookingController::class, 'store'])->name('orders.store');
 Route::post('/masses/{mass}/orders', [OrderBookingController::class, 'storeForMass'])->name('orders.store-for-mass');
 Route::get('/orders/{orderNumber}/payment', [OrderBookingController::class, 'payment'])->name('orders.payment');
+Route::post('/orders/{orderNumber}/cancel', [OrderBookingController::class, 'cancel'])->name('orders.cancel');
 Route::post('/orders/{order}/evidence', [OrderBookingController::class, 'submitEvidence'])->name('orders.evidence');
 
 // Guest Order Tracking & Recovery

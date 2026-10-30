@@ -190,6 +190,7 @@ flowchart TD
 - [x] Domain action: `VerifyPaymentAction` — Central Admin only (spec §8.3) with single-query reading list populator
 - [x] Domain action: `RejectPaymentAction` — Central Admin only with reason and user notification
 - [x] Domain actions for customer requests: `CreateCancellationRequestAction`, `CreateCorrectionRequestAction`, `CreateReschedulingRequestAction`
+- [x] Domain action: `CancelUnpaidOrderAction` (direct cancellation of unverified/unpaid orders awaiting payment with audit logging)
 - [x] Pricing configuration guardrails, order snapshots, and category-level slip pricing (`PricingResolutionService` with decimal-safe `bcmath` arithmetic and batch category support)
 - [x] Central Admin & Church Admin payment settings actions and controllers (`PaymentSettingsController`, `ChurchPaymentSettingsController`, `UpdateChurchGcashAction`)
 - [x] Protected evidence uploads (private disk, randomized keys, authorized controller streaming)
@@ -216,9 +217,11 @@ flowchart TD
   - Central Admin: Pricing rules editor, base intention pricing, service fee configuration (fixed vs percentage vs none), approved version retirement
   - Church Admin: GCash credentials editor with drag-and-drop QR code upload and live image preview
 - [x] **Correction & Cancellation Modals:** Parishioner-facing request dialogs to submit spelling fixes or cancellation requests before cutoff
+- [x] **Payment Cancellation & Abort UX:** "Cancel Order & Discard Slips" button and top navigation link with confirmation dialog on Payment offering screen, preventing orphaned pending orders
 
 #### 3. Wiring & Integration
 - [x] Wire multi-step booking wizard to `CreateOrderAction` and `SubmitPaymentEvidenceAction` with form state persistence and validation feedback
+- [x] Wire cancellation route `POST /orders/{orderNumber}/cancel` to `CancelUnpaidOrderAction` with guest token and registered session validation
 - [x] Wire Central Admin verification workbench to `VerifyPaymentAction` with row locking and instant UI feedback
 - [x] Connect guest access token validation and email challenges with rate limiting indicators
 - [x] Wire payment settings routes to backend policy-authorized actions
@@ -266,8 +269,12 @@ flowchart TD
 - [x] 40. Payments queue composite index on `(status, created_at)` verified via MySQL EXPLAIN (`DatabaseOptimizationTest`)
 - [x] 41. Reading list entry sequence composite index on `(reading_list_id, position)` verified via MySQL EXPLAIN (`DatabaseOptimizationTest`)
 - [x] 42. Multi-slip order creation batches category resolution into 1 query without N+1 duplication (`DatabaseOptimizationTest`)
+- [x] 43. Registered user can cancel unpaid order awaiting payment on payment screen; order and intentions become cancelled, payment rejected, audit logged (`Phase3OrdersAndPaymentsTest`)
+- [x] 44. Guest user can cancel unpaid order with valid guest token (`Phase3OrdersAndPaymentsTest`)
+- [x] 45. Unauthorized actor or stranger cannot cancel unpaid order (`Phase3OrdersAndPaymentsTest`)
+- [x] 46. Order not in awaiting_payment state cannot be directly cancelled (`Phase3OrdersAndPaymentsTest`)
 
-**Release gate:** All payment exception tests pass; payment evidence remains strictly private; verification queue, parishioner booking wizard, and payment settings tested across mobile and desktop; database backend optimized with zero N+1 queries on MySQL 8.4 (42/42 passing).
+**Release gate:** All payment exception tests pass; payment evidence remains strictly private; verification queue, parishioner booking wizard, payment cancellation abort flow, and payment settings tested across mobile and desktop; database backend optimized with zero N+1 queries on MySQL 8.4 (46/46 passing).
 
 ---
 

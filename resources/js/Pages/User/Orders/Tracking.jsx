@@ -98,6 +98,7 @@ export default function OrderTracking({ orders = [] }) {
                                 <option value="confirmed">Confirmed / Enrolled</option>
                                 <option value="action_required">Action Required</option>
                                 <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
                             </select>
 
                             {(search || statusFilter !== 'all') && (
@@ -259,6 +260,14 @@ export default function OrderTracking({ orders = [] }) {
                                                     <div className="text-rose-800 font-medium flex items-center space-x-2">
                                                         <ExclamationTriangleIcon className="w-4 h-4 text-rose-600 shrink-0" />
                                                         <span>An exception was noted on your payment (e.g. short payment or unclear reference). Please contact parish administration.</span>
+                                                    </div>
+                                                )}
+                                                {order.status === 'cancelled' && (
+                                                    <div className="text-stone-500 font-medium flex items-center space-x-2">
+                                                        <svg className="w-4 h-4 text-stone-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                        <span>This order was cancelled. Intentions are discarded and will not be proclaimed at Mass.</span>
                                                     </div>
                                                 )}
                                             </div>

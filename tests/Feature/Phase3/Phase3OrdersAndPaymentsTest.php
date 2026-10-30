@@ -1233,4 +1233,268 @@ class Phase3OrdersAndPaymentsTest extends TestCase
             'status' => PaymentExceptionStatus::Open->value,
         ]);
     }
+
+    // -------------------------------------------------------------------------
+    // Test Case 31: Registered user can cancel unpaid order awaiting payment
+    // -------------------------------------------------------------------------
+    public function test_case_31_registered_user_can_cancel_unpaid_order_awaiting_payment(): void
+    {
+        $church = Church::factory()->create(['status' => ChurchStatus::Published]);
+        $user = User::factory()->create();
+        $mass = MassSchedule::factory()->create(['church_id' => $church->id]);
+
+        $order = Order::factory()->create([
+            'church_id' => $church->id,
+            'mass_schedule_id' => $mass->id,
+            'user_id' => $user->id,
+            'submitter_type' => 'registered_user',
+            'status' => OrderStatus::AwaitingPayment,
+        ]);
+
+        $intention = Intention::factory()->create([
+            'order_id' => $order->id,
+            'church_id' => $church->id,
+            'mass_schedule_id' => $mass->id,
+            'status' => IntentionStatus::AwaitingPayment,
+        ]);
+
+        $payment = Payment::factory()->pendingPayment()->create([
+            'order_id' => $order->id,
+            'church_id' => $church->id,
+        ]);
+
+        $response = $this->actingAs($user)->post(route('orders.cancel', ['orderNumber' => $order->order_number]), [
+            'reason' => 'Changed my mind before paying.',
+        ]);
+
+        $response->assertRedirect(route('churches.show', ['slug' => $church->slug]));
+        $response->assertSessionHas('success');
+
+        $order->refresh();
+        $intention->refresh();
+        $payment->refresh();
+
+        $this->assertEquals(OrderStatus::Cancelled, $order->status);
+        $this->assertNotNull($order->cancelled_at);
+        $this->assertEquals(IntentionStatus::Cancelled, $intention->status);
+        $this->assertEquals(PaymentStatus::Rejected, $payment->status);
+
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'order.cancelled',
+            'target_type' => Order::class,
+            'target_id' => $order->id,
+            'church_id' => $church->id,
+        ]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Test Case 32: Guest user can cancel unpaid order with valid guest token
+    // -------------------------------------------------------------------------
+    public function test_case_32_guest_user_can_cancel_unpaid_order_with_valid_token(): void
+    {
+        $church = Church::factory()->create(['status' => ChurchStatus::Published]);
+        $mass = MassSchedule::factory()->create(['church_id' => $church->id]);
+
+        $order = Order::factory()->create([
+            'church_id' => $church->id,
+            'mass_schedule_id' => $mass->id,
+            'user_id' => null,
+            'submitter_type' => 'guest',
+            'submitter_email' => 'guest@example.com',
+            'status' => OrderStatus::AwaitingPayment,
+        ]);
+
+        $guestAccess = app(GuestAccessService::class);
+        $credential = $guestAccess->issueCredential($order, 'guest@example.com');
+
+        $response = $this->withSession(['guest_order_token_'.$order->order_number => $credential['raw_token']])
+            ->post(route('orders.cancel', ['orderNumber' => $order->order_number]), [
+                'token' => $credential['raw_token'],
+            ]);
+
+        $response->assertRedirect(route('churches.show', ['slug' => $church->slug]));
+        $order->refresh();
+        $this->assertEquals(OrderStatus::Cancelled, $order->status);
+    }
+
+    // -------------------------------------------------------------------------
+    // Test Case 33: Unauthorized user or invalid token cannot cancel order
+    // -------------------------------------------------------------------------
+    public function test_case_33_unauthorized_actor_cannot_cancel_unpaid_order(): void
+    {
+        $church = Church::factory()->create(['status' => ChurchStatus::Published]);
+        $owner = User::factory()->create();
+        $stranger = User::factory()->create();
+        $mass = MassSchedule::factory()->create(['church_id' => $church->id]);
+
+        $order = Order::factory()->create([
+            'church_id' => $church->id,
+            'mass_schedule_id' => $mass->id,
+            'user_id' => $owner->id,
+            'submitter_type' => 'registered_user',
+            'status' => OrderStatus::AwaitingPayment,
+        ]);
+
+        $response = $this->actingAs($stranger)->post(route('orders.cancel', ['orderNumber' => $order->order_number]));
+        $response->assertStatus(403);
+
+        $order->refresh();
+        $this->assertEquals(OrderStatus::AwaitingPayment, $order->status);
+    }
+
+    // -------------------------------------------------------------------------
+    // Test Case 34: Order not in awaiting payment cannot be cancelled directly
+    // -------------------------------------------------------------------------
+    public function test_case_34_order_not_awaiting_payment_cannot_be_directly_cancelled(): void
+    {
+        $church = Church::factory()->create(['status' => ChurchStatus::Published]);
+        $user = User::factory()->create();
+        $mass = MassSchedule::factory()->create(['church_id' => $church->id]);
+
+        $order = Order::factory()->create([
+            'church_id' => $church->id,
+            'mass_schedule_id' => $mass->id,
+            'user_id' => $user->id,
+            'submitter_type' => 'registered_user',
+            'status' => OrderStatus::PaymentUnderReview,
+        ]);
+
+        $response = $this->actingAs($user)->post(route('orders.cancel', ['orderNumber' => $order->order_number]));
+        $response->assertSessionHas('error');
+
+        $order->refresh();
+        $this->assertEquals(OrderStatus::PaymentUnderReview, $order->status);
+    }
+
+    // -------------------------------------------------------------------------
+    // Test Case 31: Registered user can cancel unpaid order awaiting payment
+    // -------------------------------------------------------------------------
+    public function test_case_31_registered_user_can_cancel_unpaid_order_awaiting_payment(): void
+    {
+        $church = Church::factory()->create(['status' => ChurchStatus::Published]);
+        $user = User::factory()->create();
+        $mass = MassSchedule::factory()->create(['church_id' => $church->id]);
+
+        $order = Order::factory()->create([
+            'church_id' => $church->id,
+            'mass_schedule_id' => $mass->id,
+            'user_id' => $user->id,
+            'submitter_type' => 'registered_user',
+            'status' => OrderStatus::AwaitingPayment,
+        ]);
+
+        $intention = Intention::factory()->create([
+            'order_id' => $order->id,
+            'church_id' => $church->id,
+            'mass_schedule_id' => $mass->id,
+            'status' => IntentionStatus::AwaitingPayment,
+        ]);
+
+        $payment = Payment::factory()->pendingPayment()->create([
+            'order_id' => $order->id,
+            'church_id' => $church->id,
+        ]);
+
+        $response = $this->actingAs($user)->post(route('orders.cancel', ['orderNumber' => $order->order_number]), [
+            'reason' => 'Changed my mind before paying.',
+        ]);
+
+        $response->assertRedirect(route('churches.show', ['slug' => $church->slug]));
+        $response->assertSessionHas('success');
+
+        $order->refresh();
+        $intention->refresh();
+        $payment->refresh();
+
+        $this->assertEquals(OrderStatus::Cancelled, $order->status);
+        $this->assertNotNull($order->cancelled_at);
+        $this->assertEquals(IntentionStatus::Cancelled, $intention->status);
+        $this->assertEquals(PaymentStatus::Rejected, $payment->status);
+
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'order.cancelled',
+            'target_type' => Order::class,
+            'target_id' => $order->id,
+            'church_id' => $church->id,
+        ]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Test Case 32: Guest user can cancel unpaid order with valid guest token
+    // -------------------------------------------------------------------------
+    public function test_case_32_guest_user_can_cancel_unpaid_order_with_valid_token(): void
+    {
+        $church = Church::factory()->create(['status' => ChurchStatus::Published]);
+        $mass = MassSchedule::factory()->create(['church_id' => $church->id]);
+
+        $order = Order::factory()->create([
+            'church_id' => $church->id,
+            'mass_schedule_id' => $mass->id,
+            'user_id' => null,
+            'submitter_type' => 'guest',
+            'submitter_email' => 'guest@example.com',
+            'status' => OrderStatus::AwaitingPayment,
+        ]);
+
+        $guestAccess = app(\App\Services\GuestAccess\GuestAccessService::class);
+        $credential = $guestAccess->issueCredential($order, 'guest@example.com');
+
+        $response = $this->withSession(['guest_order_token_'.$order->order_number => $credential['raw_token']])
+            ->post(route('orders.cancel', ['orderNumber' => $order->order_number]), [
+                'token' => $credential['raw_token'],
+            ]);
+
+        $response->assertRedirect(route('churches.show', ['slug' => $church->slug]));
+        $order->refresh();
+        $this->assertEquals(OrderStatus::Cancelled, $order->status);
+    }
+
+    // -------------------------------------------------------------------------
+    // Test Case 33: Unauthorized user or invalid token cannot cancel order
+    // -------------------------------------------------------------------------
+    public function test_case_33_unauthorized_actor_cannot_cancel_unpaid_order(): void
+    {
+        $church = Church::factory()->create(['status' => ChurchStatus::Published]);
+        $owner = User::factory()->create();
+        $stranger = User::factory()->create();
+        $mass = MassSchedule::factory()->create(['church_id' => $church->id]);
+
+        $order = Order::factory()->create([
+            'church_id' => $church->id,
+            'mass_schedule_id' => $mass->id,
+            'user_id' => $owner->id,
+            'submitter_type' => 'registered_user',
+            'status' => OrderStatus::AwaitingPayment,
+        ]);
+
+        $response = $this->actingAs($stranger)->post(route('orders.cancel', ['orderNumber' => $order->order_number]));
+        $response->assertStatus(403);
+
+        $order->refresh();
+        $this->assertEquals(OrderStatus::AwaitingPayment, $order->status);
+    }
+
+    // -------------------------------------------------------------------------
+    // Test Case 34: Order not in awaiting payment cannot be cancelled directly
+    // -------------------------------------------------------------------------
+    public function test_case_34_order_not_awaiting_payment_cannot_be_directly_cancelled(): void
+    {
+        $church = Church::factory()->create(['status' => ChurchStatus::Published]);
+        $user = User::factory()->create();
+        $mass = MassSchedule::factory()->create(['church_id' => $church->id]);
+
+        $order = Order::factory()->create([
+            'church_id' => $church->id,
+            'mass_schedule_id' => $mass->id,
+            'user_id' => $user->id,
+            'submitter_type' => 'registered_user',
+            'status' => OrderStatus::PaymentUnderReview,
+        ]);
+
+        $response = $this->actingAs($user)->post(route('orders.cancel', ['orderNumber' => $order->order_number]));
+        $response->assertSessionHas('error');
+
+        $order->refresh();
+        $this->assertEquals(OrderStatus::PaymentUnderReview, $order->status);
+    }
 }

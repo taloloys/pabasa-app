@@ -344,7 +344,7 @@ These items are explicitly marked in the spec as requiring business/legal approv
 
 - Intention prices, service fees, tax treatment
 - Revenue-sharing percentages, rounding rules, church payout formula
-- Payment submission deadline and late-payment treatment
+- **Payment submission deadline and unpaid order expiration**: *Approved rule:* Unpaid orders (`awaiting_payment` / `pending_payment`) where the customer did not manually cancel or complete payment expire and are automatically cancelled when the Mass booking window closes (either when the assigned lector closes submissions early or automatically when the Mass booking cutoff/start time has passed). Late payment evidence uploaded after cutoff is flagged for Central Admin exception review rather than discarded.
 - Refund eligibility, approval thresholds, deadlines
 - Settlement week boundaries, timezone policy, review sign-off
 - Legal retention periods, privacy wording

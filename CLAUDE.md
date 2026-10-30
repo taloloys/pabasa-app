@@ -193,7 +193,7 @@ All transitions documented in spec §5. Critical rules:
 ## Pending Business Decisions (DO NOT hard-code)
 
 - Pricing, fees, tax, revenue-sharing percentages
-- Payment deadlines, late-payment treatment
+- **Payment submission deadline and unpaid order expiration**: *Approved rule:* Unpaid orders (`awaiting_payment` / `pending_payment`) where the customer did not manually cancel or complete payment expire and are automatically cancelled when the Mass booking window closes (either when the assigned lector closes submissions early or automatically when the Mass booking cutoff/start time has passed). Late payment evidence uploaded after cutoff is flagged for Central Admin exception review rather than discarded.
 - Refund eligibility, thresholds, deadlines
 - Settlement timing, review sign-off
 - Legal retention periods

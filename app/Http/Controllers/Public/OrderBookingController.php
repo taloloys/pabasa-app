@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Actions\Orders\CancelUnpaidOrderAction;
 use App\Actions\Orders\CreateOrderAction;
 use App\Actions\Payments\SubmitPaymentEvidenceAction;
 use App\Enums\CategoryType;
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Church;
 use App\Models\ChurchCategory;
 use App\Models\MassSchedule;
 use App\Models\Order;
 use App\Models\PricingConfiguration;
+use App\Services\GuestAccess\GuestAccessService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -117,11 +120,16 @@ class OrderBookingController extends Controller
     /**
      * Show GCash payment offering screen.
      */
-    public function payment(Request $request, string $orderNumber): Response
+    public function payment(Request $request, string $orderNumber): Response|RedirectResponse
     {
         $order = Order::with(['church.branding', 'massSchedule', 'intentions', 'payments'])
             ->where('order_number', $orderNumber)
             ->firstOrFail();
+
+        if ($order->status === OrderStatus::Cancelled) {
+            return redirect()->route('churches.show', ['slug' => $order->church->slug])
+                ->with('error', 'This order has already been cancelled.');
+        }
 
         $payment = $order->latestPayment;
         $guestToken = session('guest_order_token_'.$order->order_number);
@@ -183,5 +191,50 @@ class OrderBookingController extends Controller
         $action->execute($payment, $validated, $request->user());
 
         return back()->with('success', 'Payment screenshot uploaded successfully. Your offering is now queued for verification.');
+    }
+
+    /**
+     * Cancel an unverified unpaid order from the payment offering screen.
+     */
+    public function cancel(Request $request, string $orderNumber, CancelUnpaidOrderAction $action, GuestAccessService $guestAccess): RedirectResponse
+    {
+        $order = Order::with('church')
+            ->where('order_number', $orderNumber)
+            ->firstOrFail();
+
+        // Validate submitter authorization
+        if ($order->submitter_type === 'registered_user') {
+            if (! $request->user() || (int) $request->user()->id !== (int) $order->user_id) {
+                abort(403, 'Unauthorized.');
+            }
+        } else {
+            $sessionToken = session('guest_order_token_'.$order->order_number);
+            $inputToken = $request->input('token');
+            $rawToken = $inputToken ?: $sessionToken;
+
+            $isAuthorized = false;
+            if ($rawToken) {
+                $access = $guestAccess->verifyToken($rawToken);
+                if ($access && (int) $access->order_id === (int) $order->id) {
+                    $isAuthorized = true;
+                }
+            }
+
+            if (! $isAuthorized) {
+                abort(403, 'Unauthorized guest access.');
+            }
+        }
+
+        if ($order->status !== OrderStatus::AwaitingPayment) {
+            return back()->with('error', 'Only orders awaiting payment can be directly cancelled.');
+        }
+
+        $reason = $request->input('reason', 'Cancelled by customer before payment.');
+        $action->execute($order, $request->user(), $reason);
+
+        session()->forget('guest_order_token_'.$order->order_number);
+
+        return redirect()->route('churches.show', ['slug' => $order->church->slug])
+            ->with('success', "Your intention order {$order->order_number} was cancelled. No payment was charged.");
     }
 }

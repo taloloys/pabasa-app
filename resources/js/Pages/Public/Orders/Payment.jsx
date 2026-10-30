@@ -43,12 +43,23 @@ export default function Payment({ order, church, mass, payment, guestToken }) {
     const { auth } = usePage().props;
     const [previewUrl, setPreviewUrl] = useState(null);
     const [qrLightbox, setQrLightbox] = useState(false);
+    const [showCancelModal, setShowCancelModal] = useState(false);
 
     const { data, setData, post, processing, errors } = useForm({
         reference_number: '',
         submitted_amount: order.expected_amount || '',
         evidence_file: null,
     });
+
+    const { post: postCancel, processing: cancelling } = useForm({
+        token: guestToken || '',
+        reason: 'Cancelled by customer on payment offering screen.',
+    });
+
+    const handleCancelOrder = (e) => {
+        e.preventDefault();
+        postCancel(route('orders.cancel', { orderNumber: order.order_number }));
+    };
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -98,6 +109,23 @@ export default function Payment({ order, church, mass, payment, guestToken }) {
             </header>
 
             <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
+                {/* Back / Cancel Navigation */}
+                <div className="flex items-center justify-between">
+                    <button
+                        type="button"
+                        onClick={() => setShowCancelModal(true)}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-liturgical-900 transition cursor-pointer"
+                    >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        &larr; Cancel this order &amp; return to parish
+                    </button>
+                    <span className="text-[11px] text-stone-400">
+                        Unpaid intention submissions can be cancelled at any time
+                    </span>
+                </div>
+
                 {/* Guest tracking alert banner */}
                 {guestToken && (
                     <div className="p-4 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 space-y-2">
@@ -321,12 +349,68 @@ export default function Payment({ order, church, mass, payment, guestToken }) {
                                     <PrimaryButton disabled={processing || !data.evidence_file} className="w-full justify-center text-xs cursor-pointer">
                                         {processing ? 'Uploading Evidence...' : 'Submit Payment Screenshot'}
                                     </PrimaryButton>
+
+                                    <div className="pt-3 border-t border-stone-100 flex flex-col items-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowCancelModal(true)}
+                                            disabled={cancelling}
+                                            className="text-xs text-rose-700 hover:text-rose-900 font-semibold hover:underline inline-flex items-center gap-1 cursor-pointer transition"
+                                        >
+                                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                            Cancel Order &amp; Discard Slips
+                                        </button>
+                                        <span className="text-[11px] text-stone-400 mt-0.5">
+                                            Will not be recorded or proclaimed at Mass
+                                        </span>
+                                    </div>
                                 </form>
                             )}
                         </div>
                     </div>
                 </div>
             </main>
+
+            {/* Cancel Confirmation Modal */}
+            {showCancelModal && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl border border-stone-200 space-y-4">
+                        <div className="flex items-center space-x-3 text-rose-700">
+                            <div className="p-2 rounded-full bg-rose-100">
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <h3 className="font-cinzel text-base font-bold text-stone-900">
+                                Cancel Prayer Intention Order?
+                            </h3>
+                        </div>
+                        <p className="text-xs text-stone-600 leading-relaxed">
+                            Are you sure you want to cancel Order <span className="font-mono font-bold text-stone-900">{order.order_number}</span>? Since offering payment has not been submitted, this order will be cancelled immediately and your intentions will not be enrolled into the Mass reading list.
+                        </p>
+                        <div className="flex justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setShowCancelModal(false)}
+                                disabled={cancelling}
+                                className="px-4 py-2 text-xs font-semibold text-stone-600 hover:text-stone-800 rounded-lg border border-stone-200 hover:bg-stone-50 cursor-pointer transition"
+                            >
+                                Keep Order
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleCancelOrder}
+                                disabled={cancelling}
+                                className="px-4 py-2 text-xs font-bold text-white bg-rose-700 hover:bg-rose-800 rounded-lg shadow-xs transition cursor-pointer"
+                            >
+                                {cancelling ? 'Cancelling...' : 'Yes, Cancel Order'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* QR Code Lightbox */}
             {qrLightbox && church.gcash_qr_url && (
