@@ -94,7 +94,7 @@ flowchart TD
 - [x] **Auth Screens Theming:** Adapt Breeze Login, Register, Forgot Password, and Profile pages to Pabasa branding with responsive layout and locale switcher (`en`, `fil`, `ceb`)
 - [x] **Staff Invitation Acceptance View:** Token verification screen with password creation, clear expiration warnings, and invalid/revoked token feedback
 - [x] **Church Membership Management UI:** Staff roster table with role badges (Church Admin vs Lector), invite staff modal, and instant deactivation modal with confirmation prompt
-- [x] **Central Admin & Church Admin Layout Shells:** Persistent navigation shells, breadcrumbs, user dropdown, tenant indicator, and unified global flash notification system (`FlashMessage.jsx`) with 5-second auto-dismiss timeout, duplicate display prevention, and manual dismiss support across `AuthenticatedLayout` and `GuestLayout`
+- [x] **Central Admin & Church Admin Layout Shells:** Persistent navigation shells, breadcrumbs, user dropdown, tenant indicator, and unified global flash notification system (`FlashMessage.jsx`) with 5-second auto-dismiss timeout, duplicate display prevention, and manual dismiss support across `AuthenticatedLayout` and `GuestLayout`. Streamlined Central Admin top bar by removing inline administrative link clutter from `AuthenticatedLayout`, routing Chancery module shortcuts through the user profile dropdown and the dedicated `Diocese Console →` quick-switcher.
 
 #### 3. Wiring & Integration
 - [x] Wire staff invitation forms to backend actions with optimistic feedback and validation error display
@@ -181,16 +181,20 @@ flowchart TD
 
 #### 1. Backend Track
 - [x] Migrations: `pricing_configurations`, `orders`, `intentions`, `payments`, `payment_evidence`, `payment_exceptions`, `refunds`, `reading_lists`, `reading_list_entries`, `correction_requests`, `cancellation_requests`, `rescheduling_requests`, `guest_order_access`, `order_account_links`
+- [x] Parish GCash branding migration: `2026_10_30_000001_add_gcash_fields_to_church_branding_table` (`gcash_name`, `gcash_number`, `gcash_qr_path`)
+- [x] Database performance & indexing migration: `2026_10_30_000002_optimize_database_indexes_and_constraints` (composite indexes on `orders`, `payments`, `reading_list_entries`, `mass_schedules`, `intentions`, unique `token_hash`, redundant index cleanup)
 - [x] Backed PHP enums: `OrderStatus`, `IntentionStatus`, `PaymentStatus`, `RefundStatus`, `CancellationRequestStatus`, `ReschedulingRequestStatus`, `CorrectionRequestStatus`
 - [x] Policies: `OrderPolicy`, `PaymentPolicy`, `RefundPolicy`
-- [x] Domain action: `CreateOrderAction` (spec §8.1)
+- [x] Domain action: `CreateOrderAction` (spec §8.1) with batched category lookups (N+1 query elimination)
 - [x] Domain action: `SubmitPaymentEvidenceAction` (spec §8.2)
-- [x] Domain action: `VerifyPaymentAction` — Central Admin only (spec §8.3)
+- [x] Domain action: `VerifyPaymentAction` — Central Admin only (spec §8.3) with single-query reading list populator
 - [x] Domain action: `RejectPaymentAction` — Central Admin only with reason and user notification
 - [x] Domain actions for customer requests: `CreateCancellationRequestAction`, `CreateCorrectionRequestAction`, `CreateReschedulingRequestAction`
-- [x] Pricing configuration guardrails, order snapshots, and category-level slip pricing (`PricingResolutionService` with decimal-safe `bcmath` arithmetic)
+- [x] Pricing configuration guardrails, order snapshots, and category-level slip pricing (`PricingResolutionService` with decimal-safe `bcmath` arithmetic and batch category support)
+- [x] Central Admin & Church Admin payment settings actions and controllers (`PaymentSettingsController`, `ChurchPaymentSettingsController`, `UpdateChurchGcashAction`)
 - [x] Protected evidence uploads (private disk, randomized keys, authorized controller streaming)
-- [x] Guest access: secure tracking, email verification challenge, credential revocation (`GuestAccessService`)
+- [x] Guest access: secure tracking, email verification challenge, credential revocation (`GuestAccessService` with `order.latestPayment` eager-load)
+- [x] High-performance reporting queries: single-query conditional aggregations in `StaffDashboardController` and `ChurchDashboardController`, and cached public directory cities/provinces
 
 #### 2. UI/UX Track (Inertia + React 19)
 - [x] **Parishioner Intention Booking Wizard:**
@@ -208,14 +212,18 @@ flowchart TD
   - Left panel: Order details, claimed amount, reference number, duplicate reference warning flags, exception history
   - Right panel: High-resolution zoomable GCash screenshot viewer
   - Action bar: Explicit human verification buttons: "Verify Payment", "Flag Review Exception" (underpaid/overpaid/unclear), "Reject with Reason"
+- [x] **Central & Church Admin Payment Settings UI:**
+  - Central Admin: Pricing rules editor, base intention pricing, service fee configuration (fixed vs percentage vs none), approved version retirement
+  - Church Admin: GCash credentials editor with drag-and-drop QR code upload and live image preview
 - [x] **Correction & Cancellation Modals:** Parishioner-facing request dialogs to submit spelling fixes or cancellation requests before cutoff
 
 #### 3. Wiring & Integration
 - [x] Wire multi-step booking wizard to `CreateOrderAction` and `SubmitPaymentEvidenceAction` with form state persistence and validation feedback
 - [x] Wire Central Admin verification workbench to `VerifyPaymentAction` with row locking and instant UI feedback
 - [x] Connect guest access token validation and email challenges with rate limiting indicators
+- [x] Wire payment settings routes to backend policy-authorized actions
 
-**Test cases (30/30 passing):**
+**Test cases (42/42 passing):**
 - [x] 1. Registered user creates an order with multiple intentions for one Mass
 - [x] 2. Guest can submit without an account and receives a secure tracking flow
 - [x] 3. An order containing intentions for different churches or Masses is rejected
@@ -249,8 +257,17 @@ flowchart TD
 - [x] 31. Church Admin can customize souls category max limits (7 vs 10 souls) and custom slip offering rates (`CustomSlipsAndPricingTest`)
 - [x] 32. Church Admin can customize Thanksgiving celebration occasion options (`CustomSlipsAndPricingTest`)
 - [x] 33. Multi-slip order creation calculates accurate configured pricing per slip and preserves exact ecclesiastical text (`CustomSlipsAndPricingTest`)
+- [x] 34. Non-central admin is forbidden from payment settings (`CentralAdminPaymentSettingsTest`)
+- [x] 35. Central admin can view payment settings and create draft pricing configurations (`CentralAdminPaymentSettingsTest`)
+- [x] 36. Central admin can approve draft configuration and retires previous version (`CentralAdminPaymentSettingsTest`)
+- [x] 37. Central admin and church admin can update parish GCash credentials with QR image (`CentralAdminPaymentSettingsTest`, `ChurchPaymentSettingsTest`)
+- [x] 38. Public payment screen renders active GCash credentials and fee breakdown (`ChurchPaymentSettingsTest`)
+- [x] 39. Orders table composite index on `(submitter_email, submitter_type)` verified via MySQL EXPLAIN (`DatabaseOptimizationTest`)
+- [x] 40. Payments queue composite index on `(status, created_at)` verified via MySQL EXPLAIN (`DatabaseOptimizationTest`)
+- [x] 41. Reading list entry sequence composite index on `(reading_list_id, position)` verified via MySQL EXPLAIN (`DatabaseOptimizationTest`)
+- [x] 42. Multi-slip order creation batches category resolution into 1 query without N+1 duplication (`DatabaseOptimizationTest`)
 
-**Release gate:** All payment exception tests pass; payment evidence remains strictly private; verification queue and parishioner booking wizard tested across mobile and desktop (33/33 passing).
+**Release gate:** All payment exception tests pass; payment evidence remains strictly private; verification queue, parishioner booking wizard, and payment settings tested across mobile and desktop; database backend optimized with zero N+1 queries on MySQL 8.4 (42/42 passing).
 
 ---
 
