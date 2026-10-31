@@ -20,6 +20,7 @@ class Intention extends Model
         'category_id',
         'category_label_snapshot',
         'person_or_family_name',
+        'pronunciation_hint',
         'wording',
         'status',
         'original_name_snapshot',
@@ -63,5 +64,15 @@ class Intention extends Model
     public function correctionRequests(): HasMany
     {
         return $this->hasMany(CorrectionRequest::class);
+    }
+
+    public function readingListEntryIssues(): HasMany
+    {
+        return $this->hasManyThrough(
+            ReadingListEntryIssue::class,
+            ReadingListEntry::class,
+            'intention_id',
+            'reading_list_entry_id',
+        );
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Enums\ReadingListEntryStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
@@ -20,6 +21,7 @@ class OrderTrackingController extends Controller
                 'church:id,name,slug,contact_phone,contact_email',
                 'massSchedule:id,title,starts_at,language,location_label',
                 'intentions.category',
+                'intentions.readingListEntry:id,intention_id,status',
                 'latestPayment.latestEvidence',
             ])
             ->where(function ($query) use ($user) {
@@ -31,6 +33,16 @@ class OrderTrackingController extends Controller
             })
             ->latest('submitted_at')
             ->get();
+
+        $orders->each(function (Order $order) {
+            $order->intentions->each(function ($intention) {
+                $intention->setAttribute(
+                    'reading_issue_under_review',
+                    $intention->readingListEntry?->status === ReadingListEntryStatus::IssueReported,
+                );
+                $intention->unsetRelation('readingListEntry');
+            });
+        });
 
         if ($request->wantsJson()) {
             return response()->json([

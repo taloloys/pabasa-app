@@ -7,6 +7,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentExceptionStatus;
 use App\Enums\PaymentExceptionType;
 use App\Enums\PaymentStatus;
+use App\Enums\ReadingListStatus;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentException;
@@ -176,10 +177,24 @@ class VerifyPaymentAction
             ['mass_schedule_id' => $order->mass_schedule_id],
             [
                 'church_id' => $order->church_id,
-                'status' => 'preparing',
+                'status' => ReadingListStatus::Preparing,
                 'version' => 1,
             ]
         );
+        $readingList = ReadingList::query()
+            ->whereKey($readingList->id)
+            ->lockForUpdate()
+            ->firstOrFail();
+
+        if ($readingList->church_id !== $order->church_id) {
+            throw ValidationException::withMessages([
+                'reading_list' => "The reading list does not belong to this order's church.",
+            ]);
+        }
+
+        if (in_array($readingList->status, [ReadingListStatus::Finalized, ReadingListStatus::Completed], true)) {
+            return;
+        }
 
         $intentions = $order->intentions()->where('status', IntentionStatus::Confirmed->value)->get();
         if ($intentions->isEmpty()) {

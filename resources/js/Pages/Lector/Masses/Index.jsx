@@ -1,11 +1,38 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import EmptyState from '@/Components/EmptyState';
 import { Head, Link, router } from '@inertiajs/react';
+import NetworkStatusNotice from '@/Components/NetworkStatusNotice';
+import useNetworkStatus from '@/hooks/useNetworkStatus';
 
 export default function Index({ church, assignedMasses }) {
+    const { isOnline, lastSyncedAt, markSynced } = useNetworkStatus();
+    const now = Date.now();
+    const assigned = assignedMasses.data ?? [];
+    const startsBeforeNow = (mass) => new Date(mass.starts_at).getTime() <= now;
+    const inProgress = assigned.filter((mass) => (
+        mass.status === 'scheduled'
+        && startsBeforeNow(mass)
+        && mass.ends_at
+        && new Date(mass.ends_at).getTime() > now
+    ));
+    const upcoming = assigned.filter((mass) => (
+        mass.status === 'scheduled'
+        && new Date(mass.starts_at).getTime() > now
+    ));
+    const groupedIds = new Set([...inProgress, ...upcoming].map((mass) => mass.id));
+    const sortByStart = (first, second) => new Date(first.starts_at) - new Date(second.starts_at);
+    const massGroups = [
+        { title: 'In Progress', items: inProgress.sort(sortByStart) },
+        { title: 'Upcoming', items: upcoming.sort(sortByStart) },
+        { title: 'Other Assigned Masses', items: assigned.filter((mass) => !groupedIds.has(mass.id)) },
+    ].filter((group) => group.items.length > 0);
+
     const handleCloseEarly = (massId) => {
+        if (!isOnline) return;
         if (!confirm('Are you sure you want to close intention submissions early for this Mass?')) return;
-        router.post(route('lector.masses.close-early', { church: church.id, mass: massId }));
+        router.post(route('lector.masses.close-early', { church: church.id, mass: massId }), {}, {
+            onSuccess: markSynced,
+        });
     };
 
     return (
@@ -24,7 +51,8 @@ export default function Index({ church, assignedMasses }) {
             <Head title={`My Assigned Masses — ${church.name}`} />
 
             <div className="py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto space-y-4 px-4 sm:px-6 lg:px-8">
+                    <NetworkStatusNotice isOnline={isOnline} lastSyncedAt={lastSyncedAt} />
                     <div className="bg-white rounded-xl border border-gold-300/80 shadow-xs overflow-hidden">
                         <div className="p-4 border-b border-stone-100 flex items-center justify-between">
                             <h2 className="font-cinzel text-base font-bold text-liturgical-950">
@@ -49,8 +77,14 @@ export default function Index({ church, assignedMasses }) {
                                             <th className="py-3 px-4 text-right">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-stone-100">
-                                        {assignedMasses.data.map((mass) => {
+                                    {massGroups.map((group) => (
+                                        <tbody key={group.title} className="divide-y divide-stone-100">
+                                            <tr className="bg-gold-50/70">
+                                                <th colSpan={5} className="px-4 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-liturgical-950">
+                                                    {group.title} ({group.items.length})
+                                                </th>
+                                            </tr>
+                                            {group.items.map((mass) => {
                                             const isOpen = mass.booking_status === 'open' && mass.status !== 'cancelled';
 
                                             return (
@@ -69,6 +103,7 @@ export default function Index({ church, assignedMasses }) {
                                                                 day: 'numeric',
                                                                 hour: '2-digit',
                                                                 minute: '2-digit',
+                                                                timeZone: mass.timezone || church.timezone || 'Asia/Manila',
                                                             })}
                                                         </span>
                                                     </td>
@@ -92,8 +127,10 @@ export default function Index({ church, assignedMasses }) {
                                                     <td className="py-3 px-4 text-right space-x-2 whitespace-nowrap">
                                                         {isOpen && (
                                                             <button
+                                                                type="button"
+                                                                disabled={!isOnline}
                                                                 onClick={() => handleCloseEarly(mass.id)}
-                                                                className="px-2.5 py-1 rounded border border-amber-300 bg-amber-50 text-amber-800 text-[10px] font-semibold uppercase hover:bg-amber-100 cursor-pointer"
+                                                                className="px-2.5 py-1 rounded border border-amber-300 bg-amber-50 text-amber-800 text-[10px] font-semibold uppercase hover:bg-amber-100 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                                                             >
                                                                 Close Submissions
                                                             </button>
@@ -108,8 +145,9 @@ export default function Index({ church, assignedMasses }) {
                                                     </td>
                                                 </tr>
                                             );
-                                        })}
-                                    </tbody>
+                                            })}
+                                        </tbody>
+                                    ))}
                                 </table>
                             </div>
                         )}
@@ -119,4 +157,3 @@ export default function Index({ church, assignedMasses }) {
         </AuthenticatedLayout>
     );
 }
-

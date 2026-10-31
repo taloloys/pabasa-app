@@ -11,7 +11,8 @@ export default function Tracking({
     intentions = [],
     payment = null,
 }) {
-    const { auth } = usePage().props;
+    const { auth, locale = 'en' } = usePage().props;
+    const underReviewLabels = { en: 'Under review', fil: 'Sinusuri', ceb: 'Girepaso' };
     const [activeModal, setActiveModal] = useState(null); // 'correction' | 'cancellation' | 'reschedule' | null
     const [selectedIntentionId, setSelectedIntentionId] = useState(intentions[0]?.id || null);
     const [copied, setCopied] = useState(false);
@@ -398,6 +399,11 @@ export default function Tracking({
                                     <h3 className="text-base font-serif font-bold text-stone-900 mt-1.5">
                                         {item.name}
                                     </h3>
+                                    {item.under_review && (
+                                        <span className="mt-1 inline-flex rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-900">
+                                            {underReviewLabels[locale] ?? underReviewLabels.en}
+                                        </span>
+                                    )}
                                     {item.wording && (
                                         <p className="text-sm text-stone-600 mt-1 italic whitespace-pre-wrap">
                                             "{item.wording}"
@@ -567,4 +573,3 @@ export default function Tracking({
         </div>
     );
 }
-

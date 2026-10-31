@@ -1,12 +1,20 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
+import ReadingListWorkbench from './ReadingListWorkbench';
+import NetworkStatusNotice from '@/Components/NetworkStatusNotice';
+import useNetworkStatus from '@/hooks/useNetworkStatus';
 
-export default function Show({ church, mass }) {
+export default function Show({ church, mass, readingList, pendingIntentions, canManageReadingList }) {
     const isOpen = mass.booking_status === 'open' && mass.status !== 'cancelled';
+    const massTimezone = mass.timezone || church.timezone || 'Asia/Manila';
+    const { isOnline, lastSyncedAt, markSynced } = useNetworkStatus();
 
     const handleCloseEarly = () => {
+        if (!isOnline) return;
         if (!confirm('Are you sure you want to close intention submissions early for this Mass?')) return;
-        router.post(route('lector.masses.close-early', { church: church.id, mass: mass.id }));
+        router.post(route('lector.masses.close-early', { church: church.id, mass: mass.id }), {}, {
+            onSuccess: markSynced,
+        });
     };
 
     return (
@@ -35,6 +43,7 @@ export default function Show({ church, mass }) {
 
             <div className="py-8">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+                    <NetworkStatusNotice isOnline={isOnline} lastSyncedAt={lastSyncedAt} />
                     <div className="bg-white rounded-xl border border-gold-300/80 shadow-xs p-6 space-y-6">
                         <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-stone-100">
                             <div>
@@ -59,8 +68,10 @@ export default function Show({ church, mass }) {
 
                             {isOpen && (
                                 <button
+                                    type="button"
+                                    disabled={!isOnline}
                                     onClick={handleCloseEarly}
-                                    className="px-4 py-2 rounded-md border border-amber-300 bg-amber-50 text-amber-800 text-xs font-semibold uppercase tracking-wider hover:bg-amber-100 cursor-pointer"
+                                    className="px-4 py-2 rounded-md border border-amber-300 bg-amber-50 text-amber-800 text-xs font-semibold uppercase tracking-wider hover:bg-amber-100 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     Close Submissions Early
                                 </button>
@@ -80,6 +91,7 @@ export default function Show({ church, mass }) {
                                         year: 'numeric',
                                         hour: '2-digit',
                                         minute: '2-digit',
+                                        timeZone: massTimezone,
                                     })}
                                 </span>
                             </div>
@@ -94,7 +106,25 @@ export default function Show({ church, mass }) {
                                         day: 'numeric',
                                         hour: '2-digit',
                                         minute: '2-digit',
+                                        timeZone: massTimezone,
                                     })}
+                                </span>
+                            </div>
+
+                            <div>
+                                <span className="font-semibold text-stone-500 block uppercase tracking-wider">
+                                    Reading List Finalization Deadline
+                                </span>
+                                <span className="font-bold text-stone-900 text-sm mt-1 block">
+                                    {mass.finalization_deadline
+                                        ? new Date(mass.finalization_deadline).toLocaleString([], {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            timeZone: massTimezone,
+                                        })
+                                        : 'Not configured'}
                                 </span>
                             </div>
 
@@ -117,24 +147,18 @@ export default function Show({ church, mass }) {
                             </div>
                         </div>
 
-                        {/* Reading List notice */}
-                        <div className="p-4 rounded-lg bg-gold-50 border border-gold-200 text-xs text-gold-950 flex items-start space-x-3">
-                            <svg className="w-5 h-5 text-gold-700 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <div>
-                                <p className="font-semibold text-gold-900">
-                                    Phase 4 Reading List Operations
-                                </p>
-                                <p className="mt-0.5 text-gold-800">
-                                    After the cutoff deadline passes, confirmed intentions will populate your active reading list console with entry ordering, live reading controls, and PDF export.
-                                </p>
-                            </div>
-                        </div>
                     </div>
+                    <ReadingListWorkbench
+                        church={church}
+                        mass={mass}
+                        readingList={readingList}
+                        pendingIntentions={pendingIntentions}
+                        canManageReadingList={canManageReadingList}
+                        isOnline={isOnline}
+                        markSynced={markSynced}
+                    />
                 </div>
             </div>
         </AuthenticatedLayout>
     );
 }
-

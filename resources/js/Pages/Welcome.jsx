@@ -9,8 +9,11 @@ import {
     ShieldIcon,
     ScrollIcon,
 } from '@/Components/Icons';
+import { useState } from 'react';
 
 export default function Welcome({ auth, publishedChurches = [] }) {
+    const [showingMobileNavigation, setShowingMobileNavigation] = useState(false);
+
     const demoAccounts = [
         {
             role: 'Central Administrator',
@@ -106,10 +109,10 @@ export default function Welcome({ auth, publishedChurches = [] }) {
                                     className="hover:opacity-95 transition"
                                     title={auth?.user ? 'Return to Sanctuary Dashboard' : 'Pabasa Home'}
                                 >
-                                    <ApplicationLogo className="h-12 w-12" size="lg" />
+                                    <ApplicationLogo className="h-12 w-12" size="lg" wordmarkClassName="hidden sm:flex" />
                                 </Link>
 
-                                <nav className="hidden md:flex items-center space-x-5 text-xs font-semibold text-stone-700">
+                                <nav className="hidden xl:flex items-center space-x-5 text-xs font-semibold text-stone-700">
                                     <Link
                                         href={route('churches.index')}
                                         className="hover:text-liturgical-950 transition py-1"
@@ -125,48 +128,133 @@ export default function Welcome({ auth, publishedChurches = [] }) {
                                 </nav>
                             </div>
 
-                            <div className="flex items-center space-x-3 sm:space-x-5">
-                                <LocaleSwitcher />
+                            <div className="flex items-center gap-2 sm:gap-3 md:gap-5">
+                                <LocaleSwitcher className="shrink-0" />
 
-                                {auth.user ? (
-                                    <div className="flex items-center space-x-2">
-                                        <Link
-                                            href={route('churches.index')}
-                                            className="hidden sm:inline-flex items-center rounded-xl bg-gold-50 border border-gold-300 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-gold-950 hover:bg-gold-100 transition shadow-2xs"
-                                        >
-                                            Submit Intention &rarr;
-                                        </Link>
-                                        <Link
-                                            href={route('dashboard')}
-                                            className="inline-flex items-center rounded-xl bg-gradient-to-r from-liturgical-800 to-liturgical-950 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-gold-100 border border-gold-400/40 shadow-sm hover:from-liturgical-700 hover:to-liturgical-900 transition"
-                                        >
-                                            Sanctuary &rarr;
-                                        </Link>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center space-x-2">
-                                        <Link
-                                            href={route('churches.index')}
-                                            className="hidden sm:inline-flex items-center rounded-xl bg-gradient-to-r from-gold-500 to-amber-600 px-4 py-2 text-xs font-bold uppercase tracking-wider text-liturgical-950 border border-gold-400 shadow-xs hover:from-gold-400 hover:to-amber-500 transition"
-                                        >
-                                            Submit Intention &rarr;
-                                        </Link>
-                                        <Link
-                                            href={route('login')}
-                                            className="rounded-xl px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-stone-700 hover:bg-gold-50 hover:text-liturgical-950 transition"
-                                        >
-                                            Sign In
-                                        </Link>
-                                        <Link
-                                            href={route('register')}
-                                            className="inline-flex items-center rounded-xl bg-gradient-to-r from-liturgical-800 to-liturgical-950 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-gold-100 border border-gold-400/40 shadow-sm hover:from-liturgical-700 hover:to-liturgical-900 transition"
-                                        >
-                                            Register
-                                        </Link>
-                                    </div>
-                                )}
+                                <div className="hidden xl:flex items-center space-x-2">
+                                    {auth.user ? (
+                                        <>
+                                            <Link
+                                                href={route('churches.index')}
+                                                className="inline-flex items-center rounded-xl bg-gold-50 border border-gold-300 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-gold-950 hover:bg-gold-100 transition shadow-2xs"
+                                            >
+                                                Submit Intention &rarr;
+                                            </Link>
+                                            <Link
+                                                href={route('dashboard')}
+                                                className="inline-flex items-center rounded-xl bg-gradient-to-r from-liturgical-800 to-liturgical-950 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-gold-100 border border-gold-400/40 shadow-sm hover:from-liturgical-700 hover:to-liturgical-900 transition"
+                                            >
+                                                Sanctuary &rarr;
+                                            </Link>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Link
+                                                href={route('churches.index')}
+                                                className="inline-flex items-center rounded-xl bg-gradient-to-r from-gold-500 to-amber-600 px-4 py-2 text-xs font-bold uppercase tracking-wider text-liturgical-950 border border-gold-400 shadow-xs hover:from-gold-400 hover:to-amber-500 transition"
+                                            >
+                                                Submit Intention &rarr;
+                                            </Link>
+                                            <Link
+                                                href={route('login')}
+                                                className="rounded-xl px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-stone-700 hover:bg-gold-50 hover:text-liturgical-950 transition"
+                                            >
+                                                Sign In
+                                            </Link>
+                                            <Link
+                                                href={route('register')}
+                                                className="inline-flex items-center rounded-xl bg-gradient-to-r from-liturgical-800 to-liturgical-950 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-gold-100 border border-gold-400/40 shadow-sm hover:from-liturgical-700 hover:to-liturgical-900 transition"
+                                            >
+                                                Register
+                                            </Link>
+                                        </>
+                                    )}
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowingMobileNavigation((showing) => !showing)}
+                                    className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-gold-300/70 bg-white text-liturgical-900 shadow-2xs transition hover:bg-gold-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-liturgical-800 xl:hidden"
+                                    aria-label={showingMobileNavigation ? 'Close navigation menu' : 'Open navigation menu'}
+                                    aria-expanded={showingMobileNavigation}
+                                    aria-controls="mobile-home-navigation"
+                                >
+                                    {showingMobileNavigation ? (
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden="true">
+                                            <path d="m6 6 12 12M18 6 6 18" strokeLinecap="round" />
+                                        </svg>
+                                    ) : (
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden="true">
+                                            <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
+                                        </svg>
+                                    )}
+                                </button>
                             </div>
                         </div>
+
+                        <nav
+                            id="mobile-home-navigation"
+                            aria-label="Mobile navigation"
+                            className="border-t border-gold-200 py-2 xl:hidden"
+                            hidden={!showingMobileNavigation}
+                        >
+                            <Link
+                                href={route('churches.index')}
+                                onClick={() => setShowingMobileNavigation(false)}
+                                className="flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-stone-700 hover:bg-gold-50"
+                            >
+                                Parishes & Masses
+                            </Link>
+                            <Link
+                                href={route('orders.tracking')}
+                                onClick={() => setShowingMobileNavigation(false)}
+                                className="flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-stone-700 hover:bg-gold-50"
+                            >
+                                Track Intentions
+                            </Link>
+                            {auth.user ? (
+                                <>
+                                    <Link
+                                        href={route('churches.index')}
+                                        onClick={() => setShowingMobileNavigation(false)}
+                                        className="flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-stone-700 hover:bg-gold-50"
+                                    >
+                                        Submit Intention
+                                    </Link>
+                                    <Link
+                                        href={route('dashboard')}
+                                        onClick={() => setShowingMobileNavigation(false)}
+                                        className="flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-stone-700 hover:bg-gold-50"
+                                    >
+                                        Sanctuary
+                                    </Link>
+                                </>
+                            ) : (
+                                <>
+                                    <Link
+                                        href={route('churches.index')}
+                                        onClick={() => setShowingMobileNavigation(false)}
+                                        className="flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-stone-700 hover:bg-gold-50"
+                                    >
+                                        Submit Intention
+                                    </Link>
+                                    <Link
+                                        href={route('login')}
+                                        onClick={() => setShowingMobileNavigation(false)}
+                                        className="flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-stone-700 hover:bg-gold-50"
+                                    >
+                                        Sign In
+                                    </Link>
+                                    <Link
+                                        href={route('register')}
+                                        onClick={() => setShowingMobileNavigation(false)}
+                                        className="flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-stone-700 hover:bg-gold-50"
+                                    >
+                                        Register
+                                    </Link>
+                                </>
+                            )}
+                        </nav>
                     </div>
                 </header>
 

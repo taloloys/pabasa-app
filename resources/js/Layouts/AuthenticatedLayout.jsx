@@ -101,12 +101,16 @@ export default function AuthenticatedLayout({ header, children }) {
                                     className="flex items-center space-x-2 group"
                                     title={isCurrentUrlAtHome() ? 'Reload page' : 'Return to Home Dashboard'}
                                 >
-                                    <ApplicationLogo className="h-10 w-10 shadow-xs" size="sm" />
+                                    <ApplicationLogo
+                                        className="h-10 w-10 shadow-xs"
+                                        size="sm"
+                                        wordmarkClassName="hidden xl:flex"
+                                    />
                                 </Link>
                             </div>
 
                             {/* Desktop Nav Links */}
-                            <div className="hidden space-x-6 sm:-my-px sm:ms-8 sm:flex items-center">
+                            <div className="hidden space-x-6 xl:-my-px xl:ms-8 xl:flex items-center">
                                 <NavLink
                                     href={route('dashboard')}
                                     active={route().current('dashboard')}
@@ -148,7 +152,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         {/* Right Header items */}
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center space-x-3">
+                        <div className="hidden xl:ms-6 xl:flex xl:items-center space-x-3">
                             {/* Central Admin Quick Switcher */}
                             {isCentralAdmin && (
                                 <Link
@@ -238,15 +242,19 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         {/* Mobile menu trigger */}
-                        <div className="-me-2 flex items-center sm:hidden space-x-2">
+                        <div className="-me-2 flex items-center space-x-2 xl:hidden">
                             <LocaleSwitcher />
                             <button
+                                type="button"
+                                aria-label="Toggle navigation menu"
+                                aria-expanded={showingNavigationDropdown}
+                                aria-controls="authenticated-mobile-navigation"
                                 onClick={() =>
                                     setShowingNavigationDropdown(
                                         (previousState) => !previousState,
                                     )
                                 }
-                                className="inline-flex items-center justify-center rounded-xl p-2 text-stone-600 hover:bg-ivory-100 hover:text-stone-900 focus:outline-none"
+                                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl p-2 text-stone-600 hover:bg-ivory-100 hover:text-stone-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-liturgical-900"
                             >
                                 <svg
                                     className="h-6 w-6"
@@ -286,8 +294,9 @@ export default function AuthenticatedLayout({ header, children }) {
                 <div
                     className={
                         (showingNavigationDropdown ? 'block' : 'hidden') +
-                        ' sm:hidden border-t border-gold-200 bg-white/95'
+                        ' xl:hidden border-t border-gold-200 bg-white/95'
                     }
+                    id="authenticated-mobile-navigation"
                 >
                     <div className="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink

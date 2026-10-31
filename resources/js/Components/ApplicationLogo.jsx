@@ -2,6 +2,7 @@ export default function ApplicationLogo({
     className = 'h-11 w-11',
     size = 'md',
     showWordmark = true,
+    wordmarkClassName = '',
     inverted = false,
     ...props
 }) {
@@ -65,7 +66,7 @@ export default function ApplicationLogo({
             </div>
 
             {showWordmark && (
-                <div className="flex flex-col text-left">
+                <div className={`flex flex-col text-left ${wordmarkClassName}`}>
                     <div className="flex items-center space-x-1.5">
                         <span
                             className={`font-serif tracking-widest font-black leading-none ${

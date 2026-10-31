@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Guest;
 
+use App\Enums\ReadingListEntryStatus;
 use App\Http\Controllers\Controller;
 use App\Services\GuestAccess\GuestAccessService;
 use Illuminate\Http\JsonResponse;
@@ -29,6 +30,7 @@ class GuestOrderTrackingController extends Controller
         }
 
         $order = $access->order;
+        $order->loadMissing('intentions.readingListEntry:id,intention_id,status');
 
         return Inertia::render('Guest/Orders/Tracking', [
             'token' => $token,
@@ -59,6 +61,7 @@ class GuestOrderTrackingController extends Controller
                 'wording' => $i->wording,
                 'category' => $i->category_label_snapshot,
                 'status' => $i->status->value,
+                'under_review' => $i->readingListEntry?->status === ReadingListEntryStatus::IssueReported,
             ]),
             'payment' => $order->latestPayment ? [
                 'status' => $order->latestPayment->status->value,

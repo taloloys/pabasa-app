@@ -32,10 +32,11 @@ class MassSchedulePolicy
         }
 
         // Lector can ONLY view masses to which they are actively assigned (Rule 13)
-        return $mass->activeAssignments()
-            ->where('user_id', $user->id)
-            ->where('assignment_role', 'lector')
-            ->exists();
+        return $user->hasRoleInChurch($mass->church_id, MembershipRole::Lector)
+            && $mass->activeAssignments()
+                ->where('user_id', $user->id)
+                ->where('assignment_role', 'lector')
+                ->exists();
     }
 
     public function create(User $user, Church $church): bool
@@ -60,10 +61,11 @@ class MassSchedulePolicy
         }
 
         // Assigned lector can close submissions early (Rule 10)
-        return $mass->activeAssignments()
-            ->where('user_id', $user->id)
-            ->where('assignment_role', 'lector')
-            ->exists();
+        return $user->hasRoleInChurch($mass->church_id, MembershipRole::Lector)
+            && $mass->activeAssignments()
+                ->where('user_id', $user->id)
+                ->where('assignment_role', 'lector')
+                ->exists();
     }
 
     public function extendCutoff(User $user, MassSchedule $mass): bool

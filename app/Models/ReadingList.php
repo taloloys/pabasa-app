@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ReadingListStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,6 +29,7 @@ class ReadingList extends Model
     protected function casts(): array
     {
         return [
+            'status' => ReadingListStatus::class,
             'finalized_at' => 'datetime',
             'reopened_at' => 'datetime',
             'completed_at' => 'datetime',
@@ -48,5 +50,10 @@ class ReadingList extends Model
     public function entries(): HasMany
     {
         return $this->hasMany(ReadingListEntry::class)->orderBy('position');
+    }
+
+    public function versions(): HasMany
+    {
+        return $this->hasMany(ReadingListVersion::class)->orderBy('version');
     }
 }

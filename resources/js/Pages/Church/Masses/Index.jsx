@@ -278,6 +278,12 @@ export default function Index({ church, masses, categories }) {
                                                     </td>
 
                                                     <td className="py-3 px-4 text-right space-x-1 whitespace-nowrap">
+                                                        <Link
+                                                            href={route('church.masses.reading-list', { church: church.id, mass: m.id })}
+                                                            className="inline-flex min-h-11 items-center rounded border border-liturgical-700 px-3 py-1 text-[10px] font-semibold uppercase text-liturgical-900 hover:bg-stone-50"
+                                                        >
+                                                            Reading List
+                                                        </Link>
                                                         {!isCancelled && (
                                                             <>
                                                                 {isOpen && (
@@ -636,4 +642,3 @@ export default function Index({ church, masses, categories }) {
         </AuthenticatedLayout>
     );
 }
-

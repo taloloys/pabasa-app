@@ -6,7 +6,6 @@ use App\Actions\Requests\CreateCancellationRequestAction;
 use App\Actions\Requests\CreateCorrectionRequestAction;
 use App\Actions\Requests\CreateReschedulingRequestAction;
 use App\Http\Controllers\Controller;
-use App\Models\Intention;
 use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,7 +54,9 @@ class OrderRequestController extends Controller
             'wording' => ['required', 'string', 'max:1000'],
         ]);
 
-        $intention = Intention::findOrFail($validated['intention_id']);
+        $intention = $order->intentions()
+            ->whereKey($validated['intention_id'])
+            ->firstOrFail();
 
         $action->execute($order, $intention, [
             'person_or_family_name' => $validated['person_or_family_name'],

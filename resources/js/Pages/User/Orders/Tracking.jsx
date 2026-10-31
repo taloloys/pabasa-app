@@ -4,11 +4,14 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import StatusBadge from '@/Components/StatusBadge';
 import TextInput from '@/Components/TextInput';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import { DoveIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@/Components/Icons';
 
 export default function OrderTracking({ orders = [] }) {
+    const reviewLabels = { en: 'Under review', fil: 'Sinusuri', ceb: 'Girepaso' };
+    const { locale = 'en' } = usePage().props;
+    const underReviewLabel = reviewLabels[locale] ?? reviewLabels.en;
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
 
@@ -220,6 +223,11 @@ export default function OrderTracking({ orders = [] }) {
                                                             <span className="font-bold text-liturgical-950 font-serif text-sm">
                                                                 {intention.person_or_family_name}
                                                             </span>
+                                                            {intention.reading_issue_under_review && (
+                                                                <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-900">
+                                                                    {underReviewLabel}
+                                                                </span>
+                                                            )}
                                                             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gold-100 text-gold-900 border border-gold-300/80">
                                                                 {intention.category_label_snapshot || intention.category?.label || 'Prayer'}
                                                             </span>

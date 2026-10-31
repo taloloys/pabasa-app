@@ -137,24 +137,25 @@ Create migrations in this order to satisfy foreign keys:
 16. `refunds`
 17. `reading_lists`
 18. `reading_list_entries`
-19. `correction_requests`
-20. `cancellation_requests`
-21. `rescheduling_requests`
-22. `mass_change_cases` (administrative Mass cancellation/rescheduling cases)
-23. `settlements`
-24. `settlement_lines`
-25. `payouts`
-26. `support_tickets`
-27. `support_ticket_events`
-28. `notifications` / Laravel notifications table plus `notification_deliveries`
-29. `invitations`
-30. `guest_order_access`
-31. `order_account_links` (optional explicit audit/link record)
-32. `privacy_requests`
-33. `audit_logs`
-34. `security_incidents`
-35. `reading_list_versions` or equivalent immutable snapshots
-36. `failed_jobs`, `jobs`, `job_batches`, `sessions` as required by deployment configuration
+19. `reading_list_entry_issues`
+20. `correction_requests`
+21. `cancellation_requests`
+22. `rescheduling_requests`
+23. `mass_change_cases` (administrative Mass cancellation/rescheduling cases)
+24. `settlements`
+25. `settlement_lines`
+26. `payouts`
+27. `support_tickets`
+28. `support_ticket_events`
+29. `notifications` / Laravel notifications table plus `notification_deliveries`
+30. `invitations`
+31. `guest_order_access`
+32. `order_account_links` (optional explicit audit/link record)
+33. `privacy_requests`
+34. `audit_logs`
+35. `security_incidents`
+36. `reading_list_versions` or equivalent immutable snapshots
+37. `failed_jobs`, `jobs`, `job_batches`, `sessions` as required by deployment configuration
 
 ### 3.3 Core tables and columns
 
@@ -271,7 +272,7 @@ The following is the recommended schema contract. Laravel migration syntax can b
 #### `intentions`
 - `id`, `order_id`, `church_id`, `mass_schedule_id`
 - `category_id` nullable FK plus `category_label_snapshot`
-- `person_or_family_name`, `wording` text
+- `person_or_family_name`, nullable `pronunciation_hint` (separate staff-authored guidance), `wording` text
 - `status`: `awaiting_payment`, `confirmed`, `correction_pending`, `cancelled`, `completed`
 - `original_name_snapshot`, `original_wording_snapshot` set at creation or on first approved correction
 - `sort_order` for order display if needed
@@ -340,6 +341,15 @@ The following is the recommended schema contract. Laravel migration syntax can b
 - Unique (`reading_list_id`, `intention_id`); unique (`reading_list_id`, `position`) where supported and appropriate.
 - Index (`church_id`, `mass_schedule_id`, `position`), (`status`)
 - Reordering must run in a transaction and avoid temporary position collisions (e.g. use two-step temporary offsets or a robust ordered-update strategy).
+- Include only intentions backed by a verified payment. Recheck this condition before showing names, finalizing, marking read, and generating a non-snapshot PDF.
+- An open issue is private to authorized staff; the intention owner sees only a generic “under review” status.
+
+#### `reading_list_entry_issues`
+- `id`, `reading_list_entry_id`, `church_id`, `reported_by`, nullable `resolved_by`
+- `status`: `open`, `resolved`
+- `private_note` text, nullable `resolution` (`pending` or `excluded`), `reported_at`, nullable `resolved_at`
+- timestamps
+- Preserve resolved reports and their private notes as history. Never expose the private note to the intention owner.
 
 #### `reading_list_versions`
 - `id`, `reading_list_id`, `version`, `snapshot` JSON, `created_by`, `reason`, timestamps
@@ -610,13 +620,18 @@ All payment decision actions must lock the payment row in a transaction, check c
 - `confirmed` → `cancelled` only after an authorized cancellation decision.
 - `confirmed` → `completed` when the corresponding reading-list entry is marked complete.
 - Completed content corrections require the explicit correction workflow and must preserve previous values.
+- **Project decision (2026-10-31):** Central Admin alone approves/rejects intention corrections. Apply an approval only while the reading list is preparing or reopened; a finalized list must first be reopened by its assigned lector with a reason. Do not approve corrections after the reading list is completed; a separate completed-list correction workflow requires approval before implementation.
+- **Project decision (2026-10-31):** An assigned lector may correct an erroneously completed entry only while its reading list remains `finalized`. Require a reason, return the entry and intention to pending/confirmed, restore the order to confirmed if needed, and append an audit event without deleting the original completion event. Do not allow this correction after the reading list itself is completed.
 
 ### 5.4 Reading-list state
 
 - `preparing` → `finalized` by an authorized actor or configured finalization job.
 - `finalized` → `reopened` only with a reason, actor, audit record, and a new version/change history.
 - `reopened` → `finalized` after corrections and validation.
-- `finalized` → `completed` when completion rules are satisfied.
+- `finalized` → `completed` only after every required reading-list entry is explicitly marked `completed`; elapsed Mass time is not sufficient.
+- An assigned lector may report a private issue against a pending paid entry. The owner sees only a generic “under review” status. The assigned lector or same-church Church Admin may resolve it to pending or excluded; exclusion changes only this reading list and never cancels the order, changes verified payment, or creates a refund.
+- A report may be filed against a finalized list, but resolving it or changing pronunciation guidance requires the assigned lector to reopen the list with a reason first. Completed lists reject these operations. Open reports block finalization and PDF download.
+- Church Admins author pronunciation hints as separate metadata; assigned lectors may view them in the workbench and protected PDF. Hints never alter the submitted name or wording and can be changed only while the list is preparing or reopened. Finalized versions snapshot the hint.
 - A completed list may require a controlled correction/reopen workflow; never silently edit a finalized snapshot.
 - Finalization freezes normal reordering/preparation changes.
 - Unresolved orders are not silently discarded from operational tracking; they remain separately visible to authorized staff.
@@ -830,7 +845,11 @@ Church Admin must receive `403` or generic `404` for payment verification action
 | POST | `/lector/masses/{mass}/reading-list/finalize` | Finalize list if permitted |
 | POST | `/lector/masses/{mass}/reading-list/reopen` | Reopen only if role/policy allows, reason required |
 | POST | `/lector/reading-list-entries/{entry}/complete` | Mark entry completed |
-| POST | `/lector/reading-list-entries/{entry}/report-issue` | Report internal issue |
+| POST | `/churches/{church}/lector/masses/{mass}/reading-list/entries/{entry}/report-issue` | Assigned lector reports a private issue |
+| POST | `/churches/{church}/lector/masses/{mass}/reading-list/entries/{entry}/issues/{issue}/resolve` | Assigned lector resolves to pending or excluded |
+| GET | `/churches/{church}/masses/{mass}/reading-list` | Same-church Church Admin reviews issues and authors pronunciation hints |
+| PATCH | `/churches/{church}/masses/{mass}/reading-list/entries/{entry}/pronunciation` | Church Admin updates a separate pronunciation hint |
+| POST | `/churches/{church}/masses/{mass}/reading-list/entries/{entry}/issues/{issue}/resolve` | Same-church Church Admin resolves an issue |
 | POST | `/lector/masses/{mass}/complete` | Complete list when completion criteria pass |
 | GET | `/lector/masses/{mass}/reading-list.pdf` | Protected PDF |
 | GET | `/lector/masses/{mass}/sync` | Latest list/version for online sync |
@@ -1106,15 +1125,18 @@ Tests below are acceptance tests, not a claim that tests have already been execu
 11. Approved correction preserves original wording and records reviewer/reason.
 12. Correction to a finalized list requires the reopen/correct/re-finalize path.
 13. Completion records actor and timestamp.
-14. Completion correction requires a reason and preserves the original event history.
+14. An assigned lector can correct an entry completion with a reason only before the whole list is completed; the original completion event remains in audit history.
 15. One entry can be completed independently of other entries.
 16. Whole-list completion is blocked while required completion conditions are unmet.
 17. Protected PDF is denied to an unassigned lector and unauthorized user.
-18. Cached list displays last sync time and stale/offline indicator.
+18. The already-loaded list displays last sync time and a stale/offline indicator; reconnect triggers an authorized refresh.
 19. Offline mode disables reordering, completion, and schedule changes.
-20. Revoked access clears/invalidates cached private data to the extent supported by the client.
+20. Offline handling uses only the already-loaded in-memory page: do not persist private reading-list data in browser storage or a service-worker cache; keep it read-only while disconnected and refresh through normal authorization on reconnect. Access revocation cannot be observed until connectivity returns.
 21. A scheduled finalization retry does not create duplicate versions or corrupt state.
 22. Issue reports expose user-safe status but not internal staff notes.
+23. An unverified intention never appears in the lector workbench, even if stale intention status says confirmed.
+24. Issue resolution is limited to the assigned lector or same-church Church Admin, preserves the private report, and exclusion does not alter payment/order state.
+25. Church Admin pronunciation hints remain separate from submitted wording, are visible only to authorized staff, and are included in the immutable finalized snapshot/PDF.
 
 **Release gate:** list finalization, reopening, correction, and offline stale-data warnings pass end-to-end tests.
 
@@ -1262,7 +1284,7 @@ This document is an engineering specification, not legal advice or a determinati
 - Database backups automated; restoration periodically tested.
 - Health checks and basic operational alerts configured.
 - PWA service worker excludes sensitive pages, payment forms, guest credentials, and private API responses from unsafe caching.
-- Offline cache is limited to authorized reading-list content and cleared/invalidated on logout, account revocation, or expiry as supported.
+- **Project decision (2026-10-31):** Do not persist private reading-list data in browser storage or a service-worker cache. An already-loaded page may remain visible in memory, read-only, during connection loss; reload/reopen while offline is unsupported. On reconnect, refresh through normal server authorization. Access revocation cannot be observed until connectivity returns.
 - Confirm the actual Laravel Cloud limits and behavior for database backups, storage, queues, scaling, and recovery; do not promise unverified uptime or recovery targets.
 
 ---

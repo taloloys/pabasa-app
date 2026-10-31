@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\ReadingListEntryStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ReadingListEntry extends Model
 {
@@ -24,6 +26,7 @@ class ReadingListEntry extends Model
     protected function casts(): array
     {
         return [
+            'status' => ReadingListEntryStatus::class,
             'position' => 'integer',
             'completed_at' => 'datetime',
         ];
@@ -52,5 +55,10 @@ class ReadingListEntry extends Model
     public function completedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'completed_by');
+    }
+
+    public function issues(): HasMany
+    {
+        return $this->hasMany(ReadingListEntryIssue::class);
     }
 }

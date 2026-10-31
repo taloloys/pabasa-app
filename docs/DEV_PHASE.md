@@ -280,73 +280,112 @@ flowchart TD
 
 ### Phase 4 — Reading Operations & Live Lector UI
 
-**Status:** ⏳ In Progress (Next Focus)  
+**Status:** ⏳ In Progress — implementation substantially complete; release validation remains
 **Spec section:** Simplified Spec §9 Phase 4 (Blueprint §11 Phase 4)  
 
 > **Core Objective:** Complete the primary customer journey: verified intentions appear automatically on the assigned lector's reading list; assigned lectors arrange, finalize, read, and mark completions during Mass.
 
 #### 1. Backend Track
-- [ ] Verify existing migrations: `reading_lists` and `reading_list_entries` (created in Phase 3)
-- [ ] Migration: `reading_list_versions` (immutable snapshots for finalized lists)
-- [ ] Backed PHP enums: `ReadingListStatus` (`draft`, `finalized`, `completed`), `ReadingEntryStatus` (`pending`, `completed`, `skipped`, `flagged`)
-- [ ] Policy: `ReadingListPolicy` (lector must have active assignment to specific Mass; Church Admin can view own-church lists)
-- [ ] Domain action: `ReorderReadingListAction` (spec §8.4) with sequence validation
-- [ ] Domain action: `FinalizeReadingListAction` with version snapshot and audit trail
-- [ ] Domain action: `ReopenReadingListAction` requiring explicit authorization and recorded reason
-- [ ] Domain action: `ApplyCorrectionAction` (spec §8.5) integrating approved corrections
-- [ ] Domain action: `MarkReadingEntryCompletedAction` with timestamp and actor
-- [ ] Protected PDF reading list generator (clean ecclesiastical format, authorized download stream)
+- [x] Verify existing migrations: `reading_lists` and `reading_list_entries` (created in Phase 3)
+- [x] Migration: `reading_list_versions` (additive immutable snapshots; applied to development MySQL)
+- [x] Migration: `reading_list_entry_issues` and nullable `intentions.pronunciation_hint` (additive; applied to development MySQL)
+- [x] Backed PHP enums using canonical statuses: `ReadingListStatus` (`preparing`, `finalized`, `reopened`, `completed`), `ReadingListEntryStatus` (`pending`, `completed`, `issue_reported`, `excluded`)
+- [x] Policy: `ReadingListPolicy` (lector must have active assignment to specific Mass; Church Admin can view own-church lists)
+- [x] Domain action: `ReorderReadingListAction` (spec §8.4) with exact sequence validation and transactional position updates
+- [x] Domain action: `FinalizeReadingListAction` with version snapshot and audit trail
+- [x] Scheduled finalization action/command: requires configured due deadline and assigned-lector policy validation; system-audited and retry-safe
+- [x] Domain action: `ReopenReadingListAction` requiring explicit authorization and recorded reason
+- [x] Correction review/apply actions: Central Admin-only decisions, reasoned audit, stale-content protection, and preserve old values
+- [x] Domain action: `MarkReadingEntryCompletedAction` with timestamp and actor; the list/order complete only after every required entry is explicitly completed
+- [x] Domain action: correct an erroneous entry completion with a required reason only before the whole list is completed; preserve the original event in audit history
+- [x] Private reading-list issue reporting and authorized same-church resolution (pending or excluded); retain reports and audit decisions without changing payment/order state
+- [x] Separate Church Admin-authored pronunciation hints with immutable finalized snapshot support
+- [x] Protected PDF reading list generator (authorized attachment stream; finalized PDFs render immutable version snapshots)
 
 #### 2. UI/UX Track (Inertia + React 19)
-- [ ] **Assigned Masses Portal for Lectors:**
-  - View assigned upcoming and active Masses with cutoff and finalization status
-  - Restrict access strictly to assigned Masses (404/denial for unassigned)
+- [x] **Assigned Masses Portal for Lectors:**
+  - [x] List assigned Masses; Mass details include cutoff and status
+  - [x] Show configured finalization deadline in the Mass detail summary, or explicitly show that none is configured
+  - [x] Restrict access strictly to assigned Masses (404/denial for unassigned)
+  - [x] Group active, upcoming, and other assigned Masses; display the configured cutoff/finalization deadlines on details
 - [ ] **Live Lector Ambo Workbench (Tablet & Mobile Optimized):**
-  - High-contrast, glare-resistant ambo reading mode (dark/light toggle with elevated contrast)
-  - Resizable large typography slider for effortless reading while speaking at the ambo
-  - Drag-and-drop / handle reordering during draft/preparation phase
-  - Intention pronunciation chips & phonetic assistance
-  - Single-tap completion checkmark with progressive visual strike-through
+  - [x] High-contrast reading option and adjustable large typography
+  - [x] Stacked narrow-screen intention controls, 44px touch targets, visible keyboard focus, and contrast-aware completion text
+  - [x] Responsive authenticated navigation, including an accessible mobile-menu toggle and tablet breakpoint
+  - [x] Button-based move-up/move-down reordering during preparation
+  - [x] Drag-and-drop reordering (move buttons remain available for keyboard/touch fallback)
+  - [x] Intention pronunciation chips & phonetic assistance; hints stay separate from submitted wording
+  - [x] Private issue reporting with generic owner-facing review status; Church Admin review and resolution
+  - [x] Server-backed "mark as read" control; custom completion strike-through remains
+  - [x] Show last-sync/offline status for the current page; keep it read-only while disconnected and refresh through normal authorization on reconnect (memory only)
+  - [x] Disable reading-list and schedule-changing actions while offline
 - [ ] **Reading List Finalization Workflow UI:**
-  - Pre-finalization review summary
-  - Freeze warning modal explaining immutable version creation
-  - "Reopen List with Justification" modal with mandatory audit reason
-- [ ] **Ecclesiastical Print / PDF Layout:**
-  - Print-ready intention sheet with church header, Mass date/time, celebrant line, category headings, and timestamped watermark
+  - [x] Pre-finalization review summary and custom freeze-warning modal (including verified intentions waiting to be added)
+  - [x] Reopen prompt requires a reason
+  - [x] Custom accessible reopen-reason dialog
+- [x] **Ecclesiastical Print / PDF Layout:**
+  - Print-ready sheet with church header, Mass date/time, blank celebrant line, category headings, and generated-time/version watermark
 
-#### 3. Post-Core Enhancements (Deferred per Simplified Spec §2)
-- [ ] Service worker offline caching & stale-data indicator banner (add after core workflow works)
+#### 3. Offline Scope (Decision recorded 2026-10-31)
+- Persistent browser/service-worker caching is not approved; do not persist private intention data.
+- The already-loaded page remains available read-only in memory during connection loss and is refreshed through normal authorization on reconnect. Reloading the page offline and detecting access revocation while offline are unsupported.
+- Browser verification of offline indicators/actions remains pending; do not mark the release gate complete yet.
 
 #### 4. Wiring & Integration
-- [ ] Auto-populate `reading_list_entries` upon Central Admin `VerifyPaymentAction` commit
-- [ ] Wire live intention completion to backend actions with optimistic UI updates
-- [ ] Secure PDF stream ensuring unassigned lectors and public users receive 403/404
+- [x] Auto-populate `reading_list_entries` transactionally during Central Admin `VerifyPaymentAction`; finalized snapshots remain frozen
+- [x] Wire live intention completion to backend actions (server-authoritative; optimistic UI updates remain)
+- [x] Secure PDF attachment route; unassigned lector/cross-church access returns 404; anonymous callers must authenticate
+- [x] Block finalization and PDF output while an issue is open; excluded entries remain excluded only from the reading-list snapshot
 
-**Test cases (22 planned):**
-- [ ] 1. Reading list contains only eligible confirmed intentions
-- [ ] 2. Unverified order never occupies a confirmed reading-list slot
-- [ ] 3. Lector sees only assigned Masses and only authorized fields
-- [ ] 4. Reordering persists the exact requested order
-- [ ] 5. Duplicate, missing, or foreign entry IDs rejected during reorder
-- [ ] 6. Reordering a finalized list is rejected
-- [ ] 7. Finalization creates an immutable snapshot/version and audit event
-- [ ] 8. Reopening requires permission and reason; it creates history
-- [ ] 9. Re-finalization creates a new version without deleting the prior snapshot
-- [ ] 10. Correction request does not change wording before approval
-- [ ] 11. Approved correction preserves original wording and records reviewer/reason
-- [ ] 12. Correction to a finalized list requires reopen/correct/re-finalize path
-- [ ] 13. Completion records actor and timestamp
-- [ ] 14. Completion correction requires a reason and preserves original event history
-- [ ] 15. One entry can be completed independently of other entries
-- [ ] 16. Whole-list completion blocked while required conditions unmet
-- [ ] 17. Protected PDF denied to unassigned lector and unauthorized user
-- [ ] 18. Cached list displays last sync time and stale/offline indicator
-- [ ] 19. Offline mode disables reordering, completion, and schedule changes
-- [ ] 20. Revoked access clears/invalidates cached private data
-- [ ] 21. Scheduled finalization retry does not create duplicate versions or corrupt state
-- [ ] 22. Issue reports expose user-safe status but not internal staff notes
+#### 5. Confirmed Rule and Conservative Handling
+- A reading list is completed only when every required entry is explicitly marked completed; Mass time passing is not completion.
+- Verified intentions arriving after finalization remain separately visible and are included only after a reasoned reopen and re-finalization. This is the current conservative behavior; change it only with an explicit business decision.
+- Reopening a completed list is not supported by this workflow. An assigned lector may correct an erroneous entry completion only while its list remains finalized, with a reason; the original completion audit event is retained. A completed list cannot be corrected.
+- Correction review authority is Central Admin only. A finalized list must be reopened with an assigned lector's reason before applying an approved correction; completed lists cannot receive approved corrections.
+- The schema has no celebrant field. The PDF prints a blank celebrant line instead of inventing or inferring a name.
 
-**Release gate:** List finalization, reopening, live ambo completion, and authorized PDF generation pass device and authorization tests.
+**Test cases (25 in canonical spec):**
+- [x] 1. Reading list contains only eligible confirmed intentions
+- [x] 2. Unverified order never occupies a confirmed reading-list slot
+- [x] 3. Lector sees only assigned Masses and only authorized fields
+- [x] 4. Reordering persists the exact requested order
+- [x] 5. Duplicate, missing, or foreign entry IDs rejected during reorder
+- [x] 6. Reordering a finalized list is rejected
+- [x] 7. Finalization creates a version snapshot and audit event
+- [x] 8. Reopening requires permission and reason; it creates history
+- [x] 9. Re-finalization creates a new version without deleting the prior snapshot
+- [x] 10. Correction request does not change wording before approval
+- [x] 11. Approved correction preserves the prior version and records reviewer/reason
+- [x] 12. Correction to a finalized list requires reopen/correct/re-finalize path
+- [x] 13. Completion records actor and timestamp
+- [x] 14. Assigned lector can correct an entry completion with a reason only before the whole list is completed; the original completion event remains in audit history
+- [x] 15. One entry can be completed independently of other entries
+- [x] 16. Whole-list completion blocked until every required entry is completed
+- [x] 17. Protected PDF denied to unassigned lector; attachment generation verified for assigned lector
+- [ ] 18. Already-loaded list displays last sync time and stale/offline indicator (browser interaction check pending)
+- [ ] 19. Offline mode disables reordering, completion, and schedule changes (browser interaction check pending)
+- [x] 20. Private page is memory-only, read-only while offline, and re-authorized on reconnect; revocation cannot be observed while disconnected
+- [x] 21. Scheduled finalization retry does not create duplicate versions or corrupt state
+- [x] 22. Issue reports expose user-safe status but not internal staff notes
+- [x] 23. Unverified intention never appears in the lector workbench even if its status is stale
+- [x] 24. Issue resolution is limited to authorized staff, preserves private reports, and exclusion does not alter payment/order state
+- [x] 25. Church Admin pronunciation hints remain separate from submitted wording and are frozen into the finalized snapshot and PDF
+
+**Validation record (2026-10-31):** Phase 4 and the affected Phase 2 feature suites pass on Docker MySQL (37 tests, 208 assertions; 19 Phase 4 tests). Targeted Pint passes for 22 changed PHP files; the full-project Pint check still reports two style violations outside this change in `app/Actions/Orders/CancelUnpaidOrderAction.php` and `tests/Feature/Phase3/Phase3OrdersAndPaymentsTest.php`. The Vite production build succeeds, all three locale JSON files parse, the reading-list routes register, and the app root returns HTTP 200. Docker app, MySQL 8.4, Redis, and Node services are running. The additive snapshot migration was already applied to the development database; no seeders were run. Approved temporary UI fixtures were removed, and final counts confirm no users, churches, Mass schedules, assignments, reading lists, orders, intentions, or payments remain. The full suite remains blocked by duplicate test method declarations in `Phase3OrdersAndPaymentsTest.php`.
+
+**Tablet/mobile follow-up:** The authenticated empty-list lector page was browser-checked at 320, 390, 640, 768, 1024, 1100, 1280, and 1440px widths. The earlier narrow/tablet horizontal overflow was traced to the shared authenticated navigation; after moving the desktop navigation breakpoint to 1280px and hiding the wordmark below it, document width matches viewport width at all tested sizes. The mobile menu's expanded state and navigation links were checked, reading controls have 44px minimum targets, and high-contrast panel colors were verified. Temporary non-financial lector/church/Mass/list fixtures were created with approval and removed afterward; no order, payment, pricing configuration, or intention was created. Visual testing of populated entry rows and physical-device/assistive-technology testing remain outstanding.
+
+**Public landing-page responsive follow-up:** The public header's desktop actions and full wordmark caused horizontal overflow at 320px and 390px. Added a compact mobile navigation menu with accessible expanded state and retained locale switching; desktop navigation/actions remain available from the 1280px breakpoint. Browser checks at 320, 390, 640, 768, 1024, 1100, 1280, and 1440px confirmed `documentElement.scrollWidth === documentElement.clientWidth`. After the final menu-link adjustment, the production Vite build passed; a refreshed browser check at 320px and 390px again showed no horizontal overflow, displayed Parishes & Masses, Track Intentions, Submit Intention, Sign In, and Register, and confirmed the menu closes with its expanded state reset. This cross-cutting public-page fix does not change Phase 4 release-gate status.
+
+**Finalization review UI follow-up (2026-10-31):** Replaced the browser confirmation with a localized review dialog in English, Filipino, and Cebuano. It summarizes the number of entries to be frozen, the next immutable version, and any verified intentions waiting to be added; it states the freeze/reopen consequence and supports Escape, focus containment, and focus return. The Vite production build passed. Interactive authenticated workflow validation remains outstanding; no test data or database changes were made.
+
+**Offline and completion-correction follow-up (2026-10-31):** Per the approved rule, an assigned lector can undo an entry completion with a reason only while the list is still finalized; the intention/order return to confirmed and the original completion remains in append-only audit history. A completed list rejects this action. The lector Mass pages now show a localized last-sync/offline notice, remain read-only during disconnection, refresh through authorized Inertia reload on reconnect, and disable schedule/reading-list mutations offline. No browser storage or service-worker cache is used. Mass details also show the configured finalization deadline without inventing one. Focused MySQL verification passed (2 tests, 34 assertions); targeted Pint passed; the Vite production build passed. Offline interaction was not browser-verified because no authorized lector fixture was available; test cases 18-20 remain open pending validation and revocation behavior is unavailable while disconnected.
+
+**Scheduled finalization and remaining UI follow-up (2026-10-31):** Added `reading-lists:finalize-due`, scheduled every minute with overlap protection. It uses the same locked finalization action, requires a due configured deadline and an actively assigned lector who passes the policy, records the actor as system, logs validation failures, and makes repeat execution a no-op without duplicating versions. The assigned-Mass roster is grouped into in-progress, upcoming, and other assignments; the detail page shows its finalization deadline in the Mass timezone. Reopening now uses a localized reason dialog, and drag-and-drop ordering complements keyboard/touch move buttons. Focused MySQL verification passed (3 tests, 40 assertions), targeted Pint passed, the final Vite build passed, and `schedule:list` plus Artisan command discovery confirmed registration. No development data or schema was modified.
+
+**Issue reporting and pronunciation follow-up (2026-10-31):** Added private reports, owner-safe review status, same-church Church Admin/assigned-lector resolution to pending or excluded, audited decisions, and separate Church Admin-authored pronunciation hints propagated to immutable snapshots and PDFs. Open reports block finalization and PDF output; excluded entries do not alter payment or order state. Focused MySQL suite passes (19 tests, 166 assertions), including owner privacy, open-issue blocking, cross-church denial, Church Admin resolution, and PDF-hint output. Production Vite build, targeted Pint, locale JSON parsing, and reading-list route registration pass. Both additive issue/pronunciation migrations are applied; no seeders or development data changes were made.
+
+**Release gate:** Backend workflow and PDF authorization are passing focused MySQL tests. Remaining gates are authenticated browser verification of offline indicators/actions and populated-list visuals, plus physical-device/assistive-technology review. Persistent offline caching was explicitly declined; revoked access can only be rechecked after reconnect. Do not mark Phase 4 complete until these release checks are completed.
 
 ---
 
@@ -477,7 +516,7 @@ flowchart TD
 | **7. Duplicate payment** | Same GCash reference cannot be counted twice without review | `Phase3OrdersAndPaymentsTest::case_16` | ✅ Pass |
 | **8. Repeated action** | Retrying verification/finalization does not create duplicates | `Phase3OrdersAndPaymentsTest::case_19` | ✅ Pass |
 | **9. Private evidence** | Screenshot storage is private and validated on upload | `Phase3OrdersAndPaymentsTest::case_10, case_11` | ✅ Pass |
-| **10. Reading-list integrity** | Only confirmed intentions included; finalization auditable | Phase 4 test suite (Cases 1, 2, 7, 8) | ⏳ Next |
+| **10. Reading-list integrity** | Only confirmed intentions included; finalization auditable | Phase 4 focused workflow suite (partial coverage) | ⏳ In Progress |
 | **11. Financial truth** | Approval is not the same as completed refund or payout | `Phase3OrdersAndPaymentsTest::case_26`<br>Phase 5 test suite (Cases 11-15) | ⏳ In Progress |
 | **12. Export authorization** | Users can only download reports they are authorized to view | Phase 5 test suite (Cases 23-25) | ⬜ Pending |
 
@@ -510,7 +549,7 @@ flowchart TD
 | **Phase 1** | Foundation, Security & App Shell | 8 items | 5 UI items | 16 cases | ✅ Completed (16/16 pass) |
 | **Phase 2** | Directory & Mass Scheduling | 8 items | 5 UI items | 18 cases | ✅ Completed (18/18 pass) |
 | **Phase 3** | Orders, Payments & Guest Portal | 9 items | 4 UI items | 30 cases | ✅ Completed (30/30 pass) |
-| **Phase 4** | Reading Operations & Live Lector UI | 10 items | 4 UI items | 22 cases | ⏳ In Progress (Next Focus) |
+| **Phase 4** | Reading Operations & Live Lector UI | 10 items | 4 UI items | 22 planned cases; focused tests in progress | ⏳ In Progress |
 | **Phase 5** | Finance, Support & Reports | 7 items | 5 UI items | 28 cases | ⬜ Not started |
 | **Phase 6** | System Validation, A11y & Pilot | 6 items | 4 UI items | 18 cases | ⬜ Not started |
 | **Total** | **Full-Stack Platform** | **56 items** | **27 UI items** | **132 cases** | **64/132 Tests Passing** |

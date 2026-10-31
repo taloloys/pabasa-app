@@ -34,9 +34,14 @@ function AdminNavLink({ href, active, children, icon: Icon }) {
 }
 
 export default function AdminLayout({ header, children }) {
-    const { auth } = usePage().props;
+    const { auth, locale = 'en' } = usePage().props;
     const user = auth.user;
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const correctionReviewLabel = {
+        en: 'Correction Review',
+        fil: 'Pagsusuri ng Pagwawasto',
+        ceb: 'Pagrepaso sa Pagkorihir',
+    }[locale] ?? 'Correction Review';
 
     const isAtHome = () => {
         if (route().current('admin.dashboard')) return true;
@@ -182,6 +187,14 @@ export default function AdminLayout({ header, children }) {
                         </AdminNavLink>
 
                         <AdminNavLink
+                            href={route('admin.corrections.index')}
+                            active={route().current('admin.corrections.*')}
+                            icon={ClipboardListIcon}
+                        >
+                            {correctionReviewLabel}
+                        </AdminNavLink>
+
+                        <AdminNavLink
                             href={route('admin.payment-settings.index')}
                             active={route().current('admin.payment-settings.*')}
                             icon={() => (
@@ -220,6 +233,12 @@ export default function AdminLayout({ header, children }) {
                             className="block px-3 py-2 rounded-lg text-xs font-semibold text-stone-700 hover:bg-stone-50"
                         >
                             Payment Verification
+                        </Link>
+                        <Link
+                            href={route('admin.corrections.index')}
+                            className="block px-3 py-2 rounded-lg text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                        >
+                            {correctionReviewLabel}
                         </Link>
                         <Link
                             href={route('admin.payment-settings.index')}
@@ -264,4 +283,3 @@ export default function AdminLayout({ header, children }) {
         </div>
     );
 }
-

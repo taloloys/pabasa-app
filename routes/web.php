@@ -4,6 +4,7 @@ use App\Enums\ChurchStatus;
 use App\Enums\MassStatus;
 use App\Http\Controllers\Admin\ChurchRegistrationController;
 use App\Http\Controllers\Admin\ChurchVerificationController;
+use App\Http\Controllers\Admin\CorrectionReviewController;
 use App\Http\Controllers\Admin\PaymentReviewController;
 use App\Http\Controllers\Admin\PaymentSettingsController;
 use App\Http\Controllers\Admin\StaffDashboardController;
@@ -16,9 +17,11 @@ use App\Http\Controllers\Church\InvitationController;
 use App\Http\Controllers\Church\LectorMatrixController;
 use App\Http\Controllers\Church\MassScheduleController;
 use App\Http\Controllers\Church\MembershipController;
+use App\Http\Controllers\Church\ReadingListManagementController;
 use App\Http\Controllers\Guest\GuestOrderTrackingController;
 use App\Http\Controllers\Lector\LectorDashboardController;
 use App\Http\Controllers\Lector\LectorMassController;
+use App\Http\Controllers\Lector\ReadingListPdfController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Public\ChurchDirectoryController;
 use App\Http\Controllers\Public\OrderBookingController;
@@ -116,6 +119,11 @@ Route::middleware(['auth', 'ensure.staff:central_admin'])->prefix('admin')->name
     Route::post('/churches/{church}/publish', [ChurchVerificationController::class, 'publish'])->name('churches.publish');
     Route::post('/churches/{church}/suspend', [ChurchVerificationController::class, 'suspend'])->name('churches.suspend');
 
+    // Intention correction review
+    Route::get('/corrections', [CorrectionReviewController::class, 'index'])->name('corrections.index');
+    Route::post('/corrections/{correction}/approve', [CorrectionReviewController::class, 'approve'])->name('corrections.approve');
+    Route::post('/corrections/{correction}/reject', [CorrectionReviewController::class, 'reject'])->name('corrections.reject');
+
     // Payment Review Queue & Workbench
     Route::get('/payments', [PaymentReviewController::class, 'index']);
     Route::get('/payments/review', [PaymentReviewController::class, 'index'])->name('payments.index');
@@ -162,6 +170,9 @@ Route::middleware(['auth', 'ensure.staff:church_admin'])->prefix('churches/{chur
     Route::post('/masses/{mass}/cancel', [MassScheduleController::class, 'cancel'])->name('masses.cancel');
     Route::post('/masses/{mass}/close-early', [MassScheduleController::class, 'closeEarly'])->name('masses.close-early');
     Route::post('/masses/{mass}/extend-cutoff', [MassScheduleController::class, 'extendCutoff'])->name('masses.extend-cutoff');
+    Route::get('/masses/{mass}/reading-list', [ReadingListManagementController::class, 'show'])->name('masses.reading-list');
+    Route::patch('/masses/{mass}/reading-list/entries/{entry}/pronunciation', [ReadingListManagementController::class, 'updatePronunciationHint'])->name('masses.reading-list.entries.pronunciation');
+    Route::post('/masses/{mass}/reading-list/entries/{entry}/issues/{issue}/resolve', [ReadingListManagementController::class, 'resolveIssue'])->name('masses.reading-list.entries.issues.resolve');
 
     // Lector Assignment Matrix
     Route::get('/lectors/matrix', [LectorMatrixController::class, 'index'])->name('lectors.matrix');
@@ -185,6 +196,14 @@ Route::middleware(['auth', 'ensure.staff:lector'])->prefix('churches/{church}/le
     Route::get('/masses', [LectorMassController::class, 'index'])->name('masses.index');
     Route::get('/masses/{mass}', [LectorMassController::class, 'show'])->name('masses.show');
     Route::post('/masses/{mass}/close-early', [LectorMassController::class, 'closeEarly'])->name('masses.close-early');
+    Route::post('/masses/{mass}/reading-list/reorder', [LectorMassController::class, 'reorder'])->name('masses.reading-list.reorder');
+    Route::post('/masses/{mass}/reading-list/finalize', [LectorMassController::class, 'finalize'])->name('masses.reading-list.finalize');
+    Route::post('/masses/{mass}/reading-list/reopen', [LectorMassController::class, 'reopen'])->name('masses.reading-list.reopen');
+    Route::post('/masses/{mass}/reading-list/entries/{entry}/complete', [LectorMassController::class, 'completeEntry'])->name('masses.reading-list.entries.complete');
+    Route::post('/masses/{mass}/reading-list/entries/{entry}/correct-completion', [LectorMassController::class, 'correctEntryCompletion'])->name('masses.reading-list.entries.correct-completion');
+    Route::post('/masses/{mass}/reading-list/entries/{entry}/report-issue', [LectorMassController::class, 'reportIssue'])->name('masses.reading-list.entries.report-issue');
+    Route::post('/masses/{mass}/reading-list/entries/{entry}/issues/{issue}/resolve', [LectorMassController::class, 'resolveIssue'])->name('masses.reading-list.entries.issues.resolve');
+    Route::get('/masses/{mass}/reading-list.pdf', [ReadingListPdfController::class, 'download'])->name('masses.reading-list.pdf');
 });
 
 Route::middleware('auth')->group(function () {
